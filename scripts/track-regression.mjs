@@ -279,7 +279,7 @@ async function main() {
         if (!isBenign404) consoleErrors.push(sourceUrl ? `${text} [${sourceUrl}]` : text);
       }
       // Surface a trace for debugging, but keep it quiet.
-      if (process.env.GEV_TEST_VERBOSE) console.log(`    [page:${type}] ${text}`);
+      if (process.env.VTR_TEST_VERBOSE) console.log(`    [page:${type}] ${text}`);
     });
     page.on('pageerror', (err) => consoleErrors.push(`pageerror: ${err.message}`));
     page.on('response', (response) => {
@@ -315,7 +315,7 @@ async function main() {
           // A withheld contact models the ordinary case where the recipient's
           // first authoritative refresh does not yet carry the shared aircraft.
           const withheld = (() => {
-            try { return window.sessionStorage.getItem('__gevWithhold') || ''; } catch { return ''; }
+            try { return window.sessionStorage.getItem('__vtrWithhold') || ''; } catch { return ''; }
           })();
           const states = window.__SYNTH.flights
             .filter((f) => f.icao !== withheld)
@@ -431,7 +431,7 @@ async function main() {
 
     // Wait for the app to expose its globals (Cesium viewer + dataManager).
     await page.waitForFunction(
-      () => window.__godsEyeView && window.__godsEyeView.viewer && window.__godsEyeView.dataManager,
+      () => window.__visonTR && window.__visonTR.viewer && window.__visonTR.dataManager,
       { timeout: 60000, polling: 200 }
     );
     console.log('  App globals ready.\n');
@@ -447,14 +447,14 @@ async function main() {
     // Give the app a moment to finish first-frame init (detection/readout log).
     await page.waitForFunction(
       () => {
-        const dm = window.__godsEyeView.dataManager;
+        const dm = window.__visonTR.dataManager;
         return dm && dm.layers && dm.layers.size >= 12;
       },
       { timeout: 30000, polling: 200 }
     ).catch(() => {});
 
     const layerInfo = await evalPage(() => {
-      const dm = window.__godsEyeView.dataManager;
+      const dm = window.__visonTR.dataManager;
       return {
         count: dm.layers.size,
         ids: [...dm.layers.keys()],
@@ -491,7 +491,7 @@ async function main() {
         throw new Error(`GLB control asset unavailable: HTTP ${asset.status}`);
       }
       const Cesium = await import('/node_modules/cesium/Build/Cesium/index.js');
-      const viewer = window.__godsEyeView.viewer;
+      const viewer = window.__visonTR.viewer;
       const modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
         Cesium.Cartesian3.fromDegrees(-97.7431, 30.2672, 9000),
       );
@@ -512,11 +512,11 @@ async function main() {
     });
     const glbBackendCapable = glbControlStarted && await page.waitForFunction(() => {
       const control = window.__qaGlbControl;
-      window.__godsEyeView.viewer.scene.requestRender();
+      window.__visonTR.viewer.scene.requestRender();
       return Boolean(control?.ready);
     }, { timeout: 40000, polling: 250 }).then(() => true).catch(() => false);
     const glbControlDetail = await evalPage((capable) => {
-      const viewer = window.__godsEyeView.viewer;
+      const viewer = window.__visonTR.viewer;
       const control = window.__qaGlbControl;
       const error = window.__qaGlbControlError;
       if (control) viewer.scene.primitives.remove(control);
@@ -534,7 +534,7 @@ async function main() {
     // ground-3d group REPLACES this with its counting 187.5 stub, restoring
     // the deterministic pre-round-5 datums everywhere else.
     await evalPage(() => {
-      window.__godsEyeView.viewer.scene.sampleHeight = () => undefined;
+      window.__visonTR.viewer.scene.sampleHeight = () => undefined;
     });
 
     // ============================================================
@@ -542,7 +542,7 @@ async function main() {
     // ============================================================
     console.log('\nEnabling flights + military layers (synthetic feed)...');
     const enabled = await evalPage(async () => {
-      const dm = window.__godsEyeView.dataManager;
+      const dm = window.__visonTR.dataManager;
       // setEnabled→toggle→init→enable→update(immediate fetch, shimmed).
       await dm.setEnabled('flights', true);
       await dm.setEnabled('military', true);
@@ -568,8 +568,8 @@ async function main() {
         models3dButton.click(); // → ON: the state the rest of the run needs
       }
       // Force one more update each so freshly-shimmed data is ingested.
-      await fl.update(window.__godsEyeView.viewer);
-      await mil.update(window.__godsEyeView.viewer);
+      await fl.update(window.__visonTR.viewer);
+      await mil.update(window.__visonTR.viewer);
       return {
         flEnabled: dm.isEnabled('flights'),
         milEnabled: dm.isEnabled('military'),
@@ -609,12 +609,12 @@ async function main() {
     // ============================================================
     console.log('\nShare Link v2 — tracked aircraft survives a full reload');
     const shareTracked = await evalPage(() => (
-      window.__godsEyeView.dataManager.layers
+      window.__visonTR.dataManager.layers
         .get('flights').module.trackById('aaa001', { origin: 'user' })
     ));
     await page.waitForFunction(
       () => {
-        const flights = window.__godsEyeView?.dataManager?.layers?.get('flights')?.module;
+        const flights = window.__visonTR?.dataManager?.layers?.get('flights')?.module;
         // `lo=` alone is NOT discriminating — the 3D-models option already
         // put an `lo` field in the hash before any aircraft was selected.
         // Wait for the tracking assignment itself.
@@ -641,27 +641,27 @@ async function main() {
 
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
-      () => window.__godsEyeView?.dataManager?.layers?.size >= 12,
+      () => window.__visonTR?.dataManager?.layers?.size >= 12,
       { timeout: 60000, polling: 200 },
     );
     await page.waitForFunction(
       () => {
-        const manager = window.__godsEyeView?.dataManager;
+        const manager = window.__visonTR?.dataManager;
         const tracked = manager?.layers?.get('flights')?.module?.getTrackedInfo?.();
         return manager?.isEnabled?.('flights')
           && tracked?.icao24 === 'aaa001'
-          && window.__godsEyeView.viewer.trackedEntity?.gevTrackedId === 'flights:aaa001';
+          && window.__visonTR.viewer.trackedEntity?.vtrTrackedId === 'flights:aaa001';
       },
       { timeout: 30000, polling: 100 },
     );
     const shareReload = await evalPage(() => {
-      const manager = window.__godsEyeView.dataManager;
+      const manager = window.__visonTR.dataManager;
       const flights = manager.layers.get('flights').module;
       return {
         flightsEnabled: manager.isEnabled('flights'),
         trackedId: flights.getTrackedInfo()?.icao24 || null,
         durableId: flights.getParams()?.selectedFlightsTrackingId || null,
-        viewerTrackedId: window.__godsEyeView.viewer.trackedEntity?.gevTrackedId || null,
+        viewerTrackedId: window.__visonTR.viewer.trackedEntity?.vtrTrackedId || null,
       };
     });
     record(
@@ -679,30 +679,30 @@ async function main() {
 
     // Prove the URL itself owns the result. Remove the same-origin saved
     // preference, then open the captured link as a clean recipient would.
-    await evalPage(() => localStorage.removeItem('gev:layer-state:v2'));
+    await evalPage(() => localStorage.removeItem('vtr:layer-state:v2'));
     await page.goto(trackedShareUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
-      () => window.__godsEyeView?.dataManager?.layers?.size >= 12,
+      () => window.__visonTR?.dataManager?.layers?.size >= 12,
       { timeout: 60000, polling: 200 },
     );
     await page.waitForFunction(
       () => {
-        const manager = window.__godsEyeView?.dataManager;
+        const manager = window.__visonTR?.dataManager;
         const tracked = manager?.layers?.get('flights')?.module?.getTrackedInfo?.();
         return manager?.isEnabled?.('flights')
           && tracked?.icao24 === 'aaa001'
-          && window.__godsEyeView.viewer.trackedEntity?.gevTrackedId === 'flights:aaa001';
+          && window.__visonTR.viewer.trackedEntity?.vtrTrackedId === 'flights:aaa001';
       },
       { timeout: 30000, polling: 100 },
     );
     const cleanRecipient = await evalPage(() => {
-      const manager = window.__godsEyeView.dataManager;
+      const manager = window.__visonTR.dataManager;
       const flights = manager.layers.get('flights').module;
       return {
         flightsEnabled: manager.isEnabled('flights'),
         trackedId: flights.getTrackedInfo()?.icao24 || null,
         durableId: flights.getParams()?.selectedFlightsTrackingId || null,
-        viewerTrackedId: window.__godsEyeView.viewer.trackedEntity?.gevTrackedId || null,
+        viewerTrackedId: window.__visonTR.viewer.trackedEntity?.vtrTrackedId || null,
       };
     });
     record(
@@ -717,14 +717,14 @@ async function main() {
     // Reload-from-local always survived a slow first refresh via the layer's
     // deferred-restore latch. The shared path used to decide on ONE refresh,
     // clear the subject, and post a failure notice seconds into startup.
-    await evalPage(() => window.sessionStorage.setItem('__gevWithhold', 'aaa001'));
+    await evalPage(() => window.sessionStorage.setItem('__vtrWithhold', 'aaa001'));
     // A goto whose URL differs only by hash is a SAME-DOCUMENT navigation: the
     // page would never reload and the app would keep its existing tracking.
     // Leave the document first so this is a real cold boot of the shared link.
     await page.goto('about:blank', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.goto(trackedShareUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
-      () => window.__godsEyeView?.dataManager?.layers?.size >= 12,
+      () => window.__visonTR?.dataManager?.layers?.size >= 12,
       { timeout: 60000, polling: 200 },
     );
     await page.waitForFunction(
@@ -733,7 +733,7 @@ async function main() {
     );
     await new Promise((resolve) => setTimeout(resolve, 6000));
     const pendingShare = await evalPage(() => ({
-      tracked: window.__godsEyeView.dataManager.layers
+      tracked: window.__visonTR.dataManager.layers
         .get('flights').module.getTrackedInfo()?.icao24 || null,
       notice: (document.getElementById('global-loading-label')?.textContent || '').trim(),
       noticeShown: !document.getElementById('global-loading-status')?.hidden,
@@ -748,23 +748,23 @@ async function main() {
     );
 
     // The aircraft now arrives on a later poll; the latch must take it.
-    await evalPage(() => window.sessionStorage.removeItem('__gevWithhold'));
+    await evalPage(() => window.sessionStorage.removeItem('__vtrWithhold'));
     await evalPage(async () => {
-      const flights = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const flights = window.__visonTR.dataManager.layers.get('flights').module;
       for (let i = 0; i < 3; i += 1) {
-        await flights.update(window.__godsEyeView.viewer);
+        await flights.update(window.__visonTR.viewer);
         await new Promise((resolve) => setTimeout(resolve, 600));
       }
     });
     await page.waitForFunction(
-      () => window.__godsEyeView?.dataManager?.layers?.get('flights')?.module
+      () => window.__visonTR?.dataManager?.layers?.get('flights')?.module
         ?.getTrackedInfo?.()?.icao24 === 'aaa001',
       { timeout: 30000, polling: 200 },
     ).catch(() => {});
     const latchedShare = await evalPage(() => ({
-      tracked: window.__godsEyeView.dataManager.layers
+      tracked: window.__visonTR.dataManager.layers
         .get('flights').module.getTrackedInfo()?.icao24 || null,
-      viewerTrackedId: window.__godsEyeView.viewer.trackedEntity?.gevTrackedId || null,
+      viewerTrackedId: window.__visonTR.viewer.trackedEntity?.vtrTrackedId || null,
     }));
     record(
       'share-v2: the pending subject latches on when it arrives on a later poll',
@@ -777,12 +777,12 @@ async function main() {
     // Flights layer. Restore the harness-only Military companion before the
     // legacy cross-layer invariants continue.
     await evalPage(async () => {
-      const manager = window.__godsEyeView.dataManager;
+      const manager = window.__visonTR.dataManager;
       await manager.setEnabled('military', true);
-      await manager.layers.get('military').module.update(window.__godsEyeView.viewer);
+      await manager.layers.get('military').module.update(window.__visonTR.viewer);
     });
     await evalPage(() => {
-      window.__godsEyeView.viewer.scene.sampleHeight = () => undefined;
+      window.__visonTR.viewer.scene.sampleHeight = () => undefined;
     });
 
     // ============================================================
@@ -796,16 +796,16 @@ async function main() {
     // 2026-08-21). Drives the real tool runner; costs no model turns.
     // ============================================================
     console.log('\nVoice entity context — a click-selected contact answers scope:selected');
-    const runnerReady = await evalPage(() => typeof window.__gevVoiceCommands?.runner === 'function');
+    const runnerReady = await evalPage(() => typeof window.__vtrVoiceCommands?.runner === 'function');
     if (!runnerReady) {
       skip('voice-context: click-selected aircraft answers scope:selected',
         'voice command runner not exposed on this build');
     } else {
       const flightSelected = await evalPage(async () => {
-        const flights = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const flights = window.__visonTR.dataManager.layers.get('flights').module;
         // The exact call the canvas click handler makes on a billboard pick.
         flights.trackById('aaa001', { origin: 'user' });
-        const result = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const result = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         return {
           scope: result?.scope || null,
           layerId: result?.selected?.layerId || null,
@@ -834,10 +834,10 @@ async function main() {
       // second one: a frozen record left behind would be narrated later at a
       // position its aircraft has long since left.
       const switchedSubject = await evalPage(async () => {
-        const manager = window.__godsEyeView.dataManager;
+        const manager = window.__visonTR.dataManager;
         manager.layers.get('flights').module.trackById('aaa002', { origin: 'user' });
-        const result = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
-        const store = window.__gevContextStore;
+        const result = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const store = window.__vtrContextStore;
         const flightRecords = [...store.entities.values()].filter((r) => r.layerId === 'flights');
         return {
           scope: result?.scope || null,
@@ -856,10 +856,10 @@ async function main() {
 
       // A military contact is the same click, on the sibling layer.
       const militarySelected = await evalPage(async () => {
-        const manager = window.__godsEyeView.dataManager;
+        const manager = window.__visonTR.dataManager;
         manager.layers.get('flights').module.stopTracking();
         manager.layers.get('military').module.trackById('bbb101', { origin: 'user' });
-        const result = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const result = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         return {
           scope: result?.scope || null,
           layerId: result?.selected?.layerId || null,
@@ -879,9 +879,9 @@ async function main() {
       // Deselecting must give the slot back — a subject that outlives its
       // selection is the same bug pointed the other way.
       const deselected = await evalPage(async () => {
-        const manager = window.__godsEyeView.dataManager;
+        const manager = window.__visonTR.dataManager;
         manager.layers.get('military').module.stopTracking();
-        const result = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const result = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         return { scope: result?.scope || null, selected: result?.selected ?? null };
       });
       record(
@@ -896,7 +896,7 @@ async function main() {
       // ============================================================
       console.log('\nVoice entity context — a tracked satellite is a selected subject');
       const satelliteContext = await evalPage(async () => {
-        const manager = window.__godsEyeView.dataManager;
+        const manager = window.__visonTR.dataManager;
         await manager.setEnabled('satellites', true);
         const satellites = manager.layers.get('satellites').module;
         // Wait for the shimmed stations catalog to build its satrecs.
@@ -906,12 +906,12 @@ async function main() {
         }
         const tracked = satellites.trackById(25544, { origin: 'user' });
         await new Promise((resolve) => setTimeout(resolve, 500));
-        const selected = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const selected = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         // Switching subjects must move the slot, not stack a second orbit.
         satellites.trackById(20580, { origin: 'user' });
         await new Promise((resolve) => setTimeout(resolve, 500));
-        const switched = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
-        const satelliteRecordIds = [...window.__gevContextStore.entities.values()]
+        const switched = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const satelliteRecordIds = [...window.__vtrContextStore.entities.values()]
           .filter((record) => record.layerId === 'satellites')
           .map((record) => record.id);
         // CATALOG REBUILD. The tracked satellite's catalog entry is replaced
@@ -920,9 +920,9 @@ async function main() {
         // release the slot rather than linger frozen at its last position.
         satellites.trackById(25544, { origin: 'user' });
         await new Promise((resolve) => setTimeout(resolve, 500));
-        await satellites.update(window.__godsEyeView.viewer);
+        await satellites.update(window.__visonTR.viewer);
         await new Promise((resolve) => setTimeout(resolve, 600));
-        const afterRebuild = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const afterRebuild = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
 
         // RECLASSIFICATION: the subject vanishes from the catalog while a
         // DIFFERENT group — one it could have been moved into — failed to
@@ -933,20 +933,20 @@ async function main() {
         const truncatedTle = fullTle.split('\n').slice(3).join('\n');
         window.__SYNTH.tle = truncatedTle;
         window.__SYNTH.failGroup = 'geo';
-        await satellites.update(window.__godsEyeView.viewer);
+        await satellites.update(window.__visonTR.viewer);
         await new Promise((resolve) => setTimeout(resolve, 800));
-        const afterPartial = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const afterPartial = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         window.__SYNTH.failGroup = null;
         window.__SYNTH.tle = fullTle;
         // Recover, so the release case below starts from a healthy subject.
-        await satellites.update(window.__godsEyeView.viewer);
+        await satellites.update(window.__visonTR.viewer);
         await new Promise((resolve) => setTimeout(resolve, 800));
 
         // Now the subject vanishes from a COMPLETE catalog — proven absence.
         window.__SYNTH.tle = fullTle.split('\n').slice(3).join('\n');
-        await satellites.update(window.__godsEyeView.viewer);
+        await satellites.update(window.__visonTR.viewer);
         await new Promise((resolve) => setTimeout(resolve, 800));
-        const afterSubjectGone = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const afterSubjectGone = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         window.__SYNTH.tle = fullTle;
 
         // DENSE CARRIER FAILURE. Track a dense-shell satellite, then let the
@@ -961,11 +961,11 @@ async function main() {
         }
         const denseTracked = satellites.trackById(44713, { origin: 'user' });
         await new Promise((resolve) => setTimeout(resolve, 600));
-        const denseSelected = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const denseSelected = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         window.__SYNTH.failDense = true;
-        await satellites.update(window.__godsEyeView.viewer);
+        await satellites.update(window.__visonTR.viewer);
         await new Promise((resolve) => setTimeout(resolve, 1200));
-        const afterDenseFailure = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const afterDenseFailure = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         const catalogModeAfterFailure = satellites.getParams?.().catalog ?? null;
         window.__SYNTH.failDense = false;
         satellites.setParams({ catalog: 'core' });
@@ -976,7 +976,7 @@ async function main() {
         await new Promise((resolve) => setTimeout(resolve, 400));
         satellites.stopTracking?.();
         await new Promise((resolve) => setTimeout(resolve, 400));
-        const released = await window.__gevVoiceCommands.runner('get_entity_context', { scope: 'selected' });
+        const released = await window.__vtrVoiceCommands.runner('get_entity_context', { scope: 'selected' });
         await manager.setEnabled('satellites', false);
         // Following a satellite left the camera in orbit. Hand it back to the
         // synthetic fleet so later groups see the view they were written for.
@@ -1065,15 +1065,15 @@ async function main() {
       // ============================================================
       console.log('\nPanel === spoken — one number, through both real call sites');
       const panelVsSpoken = await evalPage(async () => {
-        const manager = window.__godsEyeView.dataManager;
+        const manager = window.__visonTR.dataManager;
         if (!manager.isEnabled('flights')) await manager.setEnabled('flights', true);
         if (!manager.isEnabled('military')) await manager.setEnabled('military', true);
         // Enter Contacts the way the operator does, then select a contact so
         // awareness has a real subject.
         const button = document.getElementById('global-context-flights-btn');
-        if (button && !window.__godsEyeView.styleManager.getContextModeState?.().mode) button.click();
+        if (button && !window.__visonTR.styleManager.getContextModeState?.().mode) button.click();
         for (let i = 0; i < 80; i += 1) {
-          if (window.__godsEyeView.styleManager.getContextModeState?.().mode) break;
+          if (window.__visonTR.styleManager.getContextModeState?.().mode) break;
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
         manager.layers.get('flights').module.trackById('aaa001', { origin: 'user' });
@@ -1093,7 +1093,7 @@ async function main() {
         // What the PANEL shows, read from the snapshot it renders.
         const panelAircraft = (countFor('flights') ?? 0) + (countFor('military') ?? 0);
         // What VOICE says, through the real tool runner.
-        const spoken = await window.__gevVoiceCommands.runner('analyst_query', {
+        const spoken = await window.__vtrVoiceCommands.runner('analyst_query', {
           layers: ['flights', 'military'],
           scope: { kind: 'radius', km: Math.round((snapshot.radiusM || 250000) / 1000) },
         });
@@ -1119,7 +1119,7 @@ async function main() {
       );
       // Leave Contacts as the vocabulary group expects to find it.
       await evalPage(async () => {
-        try { await window.__gevVoiceCommands.runner('set_context_mode', { mode: 'off' }); } catch {}
+        try { await window.__vtrVoiceCommands.runner('set_context_mode', { mode: 'off' }); } catch {}
       });
 
       // ============================================================
@@ -1137,12 +1137,12 @@ async function main() {
         // The MANUAL path is the one that broke silently — voice never set it.
         button.click();
         for (let i = 0; i < 60; i += 1) {
-          if (window.__godsEyeView.styleManager.getContextModeState?.().mode) break;
+          if (window.__visonTR.styleManager.getContextModeState?.().mode) break;
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
-        const state = await window.__gevVoiceCommands.runner('get_current_view_state');
+        const state = await window.__vtrVoiceCommands.runner('get_current_view_state');
         return {
-          internalMode: window.__godsEyeView.styleManager.getContextModeState?.().mode || null,
+          internalMode: window.__visonTR.styleManager.getContextModeState?.().mode || null,
           reportedMode: state?.context?.mode ?? null,
           reportedInternal: state?.context?.modeInternal ?? null,
           active: state?.context?.active ?? null,
@@ -1160,8 +1160,8 @@ async function main() {
       // Round-trip: whatever state output reports must be a word the tool
       // accepts. Feeding the reported mode straight back must not be rejected.
       const roundTrip = await evalPage(async (reported) => {
-        const result = await window.__gevVoiceCommands.runner('set_context_mode', { mode: reported });
-        const state = await window.__gevVoiceCommands.runner('get_current_view_state');
+        const result = await window.__vtrVoiceCommands.runner('set_context_mode', { mode: reported });
+        const state = await window.__vtrVoiceCommands.runner('get_current_view_state');
         return {
           ok: result?.ok ?? null,
           error: result?.error || null,
@@ -1181,8 +1181,8 @@ async function main() {
       );
 
       const contextOff = await evalPage(async () => {
-        const result = await window.__gevVoiceCommands.runner('set_context_mode', { mode: 'off' });
-        const state = await window.__gevVoiceCommands.runner('get_current_view_state');
+        const result = await window.__vtrVoiceCommands.runner('set_context_mode', { mode: 'off' });
+        const state = await window.__vtrVoiceCommands.runner('get_current_view_state');
         return {
           resultMode: result?.mode ?? null,
           stateMode: state?.context?.mode ?? null,
@@ -1209,7 +1209,7 @@ async function main() {
       // ============================================================
       console.log('\nAnalyst handoff — a looked-up contact can actually be tracked');
       const handoff = await evalPage(async () => {
-        const manager = window.__godsEyeView.dataManager;
+        const manager = window.__visonTR.dataManager;
         // This group owns its precondition: earlier groups toggle Contacts,
         // which snapshots and restores layer state around itself.
         if (!manager.isEnabled('military')) await manager.setEnabled('military', true);
@@ -1220,16 +1220,16 @@ async function main() {
           altFt: 1800, track: 210, gsKt: 130, t: 'UH60', r: '6606',
         }];
         try {
-          await mil.update(window.__godsEyeView.viewer);
+          await mil.update(window.__visonTR.viewer);
           // Scope is deliberately 'anywhere': what is under test is the
           // identity handoff, not spatial filtering, and an earlier group may
           // have left the camera somewhere else entirely.
-          const analyst = await window.__gevVoiceCommands.runner('analyst_query', {
+          const analyst = await window.__vtrVoiceCommands.runner('analyst_query', {
             layers: ['military'], scope: { kind: 'anywhere' }, limit: 10,
           });
           const item = (analyst?.items || []).find((entry) => entry.id === '6606') || null;
           const tracked = item
-            ? await window.__gevVoiceCommands.runner('track_entity', { query: item.id, layerId: 'military' })
+            ? await window.__vtrVoiceCommands.runner('track_entity', { query: item.id, layerId: 'military' })
             : null;
           return {
             militaryEnabled: manager.isEnabled('military'),
@@ -1245,7 +1245,7 @@ async function main() {
         } finally {
           window.__SYNTH.military = priorFixture;
           mil.stopTracking();
-          await mil.update(window.__godsEyeView.viewer);
+          await mil.update(window.__visonTR.viewer);
         }
       });
       record(
@@ -1269,10 +1269,10 @@ async function main() {
       // Restore the state the downstream invariants were written against:
       // flights following aaa001, military idle.
       await evalPage(() => {
-        window.__godsEyeView.dataManager.layers.get('flights').module.trackById('aaa001', { origin: 'user' });
+        window.__visonTR.dataManager.layers.get('flights').module.trackById('aaa001', { origin: 'user' });
       });
       await page.waitForFunction(
-        () => window.__godsEyeView?.dataManager?.layers?.get('flights')?.module
+        () => window.__visonTR?.dataManager?.layers?.get('flights')?.module
           ?.getTrackedInfo?.()?.icao24 === 'aaa001',
         { timeout: 15000, polling: 100 },
       );
@@ -1297,7 +1297,7 @@ async function main() {
     // matrix translation is nearest the tracked display position.
     await evalPage(() => {
       window.__findTrackedModel = function () {
-        const v = window.__godsEyeView.viewer;
+        const v = window.__visonTR.viewer;
         const prims = v.scene.primitives;
         const out = [];
         const walk = (coll) => {
@@ -1317,7 +1317,7 @@ async function main() {
         const pool = shown.length ? shown : out;
         if (!pool.length) return null;
         // If tracking, pick the model nearest the tracked display position.
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         // Prefer the tracked model's explicit H1 pick id. A neighboring fleet
         // model can temporarily be nearer while the follow camera/model matrix
         // settles after the cross-layer switch sequence, causing this probe to
@@ -1327,9 +1327,9 @@ async function main() {
           ? pool.find((model) => String(model.id) === trackedInfo.icao24)
           : null;
         if (exactPickModel) return exactPickModel;
-        const ent = window.__godsEyeView.viewer.trackedEntity;
+        const ent = window.__visonTR.viewer.trackedEntity;
         let tracked = null;
-        if (ent && typeof ent.gevDisplayPosition === 'function') tracked = ent.gevDisplayPosition();
+        if (ent && typeof ent.vtrDisplayPosition === 'function') tracked = ent.vtrDisplayPosition();
         if (!tracked) return pool[0];
         let best = null, bestD = Infinity;
         for (const m of pool) {
@@ -1352,13 +1352,13 @@ async function main() {
     // 3D model renders (model regime active below the 800 km ceiling).
     const trackedIcao = SYNTH.flights[0].icao;
     await evalPage((icao) => {
-      window.__godsEyeView.dataManager.layers.get('flights').module.trackById(icao);
+      window.__visonTR.dataManager.layers.get('flights').module.trackById(icao);
     }, trackedIcao);
     await sleep(1500); // let the follow camera settle + the GLB load kick off
 
     // Wait until the tracked Cesium.Model primitive exists, is ready & shown.
     const modelUp = await page.waitForFunction((icao) => {
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const ti = fl.getTrackedInfo();
       if (!ti || ti.icao24 !== icao) return false;
       const found = window.__findTrackedModel ? window.__findTrackedModel() : null;
@@ -1373,10 +1373,10 @@ async function main() {
       // entity's exposed display position (what the model uses) must equal the
       // getDetectableObjects() position. This is the exact shared-source contract.
       jitterResult = await sampleFrames(page, 30, (icao) => {
-        const dm = window.__godsEyeView.dataManager;
+        const dm = window.__visonTR.dataManager;
         const fl = dm.layers.get('flights').module;
-        const ent = window.__godsEyeView.viewer.trackedEntity;
-        const disp = ent && typeof ent.gevDisplayPosition === 'function' ? ent.gevDisplayPosition() : null;
+        const ent = window.__visonTR.viewer.trackedEntity;
+        const disp = ent && typeof ent.vtrDisplayPosition === 'function' ? ent.vtrDisplayPosition() : null;
         const dets = fl.getDetectableObjects({ maxCount: 1000 });
         const me = dets.find((d) => d.id === icao || d.id === (fl.getTrackedInfo() && fl.getTrackedInfo().callsign));
         if (!disp || !me || !me.position) return null;
@@ -1391,7 +1391,7 @@ async function main() {
       // computedScale is separate from modelMatrix and includes any
       // minimumPixelSize enlargement, so include it just as the renderer does.
       jitterResult = await sampleFrames(page, 30, (icao) => {
-        const dm = window.__godsEyeView.dataManager;
+        const dm = window.__visonTR.dataManager;
         const fl = dm.layers.get('flights').module;
         const ti = fl.getTrackedInfo();
         const model = window.__findTrackedModel();
@@ -1448,16 +1448,16 @@ async function main() {
 
     // Ensure we are tracking A and have a settled (low) follow height first.
     await evalPage((icao) => {
-      window.__godsEyeView.dataManager.layers.get('flights').module.trackById(icao);
+      window.__visonTR.dataManager.layers.get('flights').module.trackById(icao);
     }, planeA);
     await sleep(1500);
 
-    const heightBefore = await evalPage(() => window.__godsEyeView.viewer.camera.positionCartographic.height);
+    const heightBefore = await evalPage(() => window.__visonTR.viewer.camera.positionCartographic.height);
 
     // Switch to B and immediately start sampling camera height every frame.
     const switchSamples = await page.evaluate(async (icao, frames) => {
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const heights = [];
       const onTick = () => { heights.push(v.camera.positionCartographic.height); };
       const remove = v.scene.postRender.addEventListener(onTick);
@@ -1498,7 +1498,7 @@ async function main() {
 
     // Confirm the switch actually took effect (we are now tracking B).
     const nowTrackingB = await evalPage((icao) => {
-      const ti = window.__godsEyeView.dataManager.layers.get('flights').module.getTrackedInfo();
+      const ti = window.__visonTR.dataManager.layers.get('flights').module.getTrackedInfo();
       return !!(ti && ti.icao24 === icao);
     }, planeB);
     record('pull-out: track switch actually landed on plane B', nowTrackingB,
@@ -1515,7 +1515,7 @@ async function main() {
 
     // (a) military first, then commercial → military must clear.
     const cross1 = await evalPage(async (hex, icao) => {
-      const dm = window.__godsEyeView.dataManager;
+      const dm = window.__visonTR.dataManager;
       const mil = dm.layers.get('military').module;
       const fl = dm.layers.get('flights').module;
       mil.trackById(hex);
@@ -1535,7 +1535,7 @@ async function main() {
 
     // (b) commercial first, then military → commercial must clear.
     const cross2 = await evalPage(async (hex, icao) => {
-      const dm = window.__godsEyeView.dataManager;
+      const dm = window.__visonTR.dataManager;
       const mil = dm.layers.get('military').module;
       const fl = dm.layers.get('flights').module;
       fl.trackById(icao);
@@ -1566,13 +1566,13 @@ async function main() {
     console.log('\nRegression H1 — click on the tracked plane is a no-op');
     const h1Icao = SYNTH.flights[0].icao;
     await evalPage((icao) => {
-      window.__godsEyeView.dataManager.layers.get('flights').module.trackById(icao);
+      window.__visonTR.dataManager.layers.get('flights').module.trackById(icao);
     }, h1Icao);
     await sleep(1500); // follow camera settles; tracked GLB load kicks off
 
     // (i) The tracked standalone model must expose its pick id (= the icao).
     const h1ModelUp = await page.waitForFunction((icao) => {
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const ti = fl.getTrackedInfo();
       if (!ti || ti.icao24 !== icao) return false;
       const found = window.__findTrackedModel ? window.__findTrackedModel() : null;
@@ -1600,12 +1600,12 @@ async function main() {
     // or the tracked entity) so the click is deterministic — a miss would be
     // a LEGIT empty-space deselect, not the H1 signature.
     const h1ClickPoint = await evalPage(() => {
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const ti = fl.getTrackedInfo();
       if (!ti) return null;
       const ent = v.trackedEntity;
-      const disp = ent && typeof ent.gevDisplayPosition === 'function' ? ent.gevDisplayPosition() : null;
+      const disp = ent && typeof ent.vtrDisplayPosition === 'function' ? ent.vtrDisplayPosition() : null;
       const pos = disp || ti.position;
       if (!pos) return null;
       const center = v.scene.cartesianToCanvasCoordinates(pos);
@@ -1638,12 +1638,12 @@ async function main() {
       skip('H1: click on tracked plane does not pull the camera out',
         'scene.pick could not resolve the tracked plane at its screen position (GL backend picking)');
     } else {
-      const h1HeightBefore = await evalPage(() => window.__godsEyeView.viewer.camera.positionCartographic.height);
+      const h1HeightBefore = await evalPage(() => window.__visonTR.viewer.camera.positionCartographic.height);
       // Trusted mouse click through the browser event pipeline → the layer's
       // ScreenSpaceEventHandler LEFT_CLICK path (the exact H1 code path).
       await page.mouse.click(h1ClickPoint.x, h1ClickPoint.y);
       const h1Heights = await page.evaluate(async (frames) => {
-        const v = window.__godsEyeView.viewer;
+        const v = window.__visonTR.viewer;
         const heights = [];
         await new Promise((res) => {
           let n = 0;
@@ -1669,8 +1669,8 @@ async function main() {
         return heights;
       }, 45);
       const h1StillTracking = await evalPage((icao) => {
-        const ti = window.__godsEyeView.dataManager.layers.get('flights').module.getTrackedInfo();
-        return !!(ti && ti.icao24 === icao) && !!window.__godsEyeView.viewer.trackedEntity;
+        const ti = window.__visonTR.dataManager.layers.get('flights').module.getTrackedInfo();
+        return !!(ti && ti.icao24 === icao) && !!window.__visonTR.viewer.trackedEntity;
       }, h1Icao);
       record('H1: click on tracked plane keeps tracking (no deselect)', h1StillTracking,
         `picked via ${h1ClickPoint.via}; still tracking=${h1StillTracking}`);
@@ -1692,13 +1692,13 @@ async function main() {
     console.log('\nRegression M3 — tracked plane age-out releases the camera in place');
     const m3Icao = SYNTH.flights[0].icao;
     await evalPage((icao) => {
-      window.__godsEyeView.dataManager.layers.get('flights').module.trackById(icao);
+      window.__visonTR.dataManager.layers.get('flights').module.trackById(icao);
     }, m3Icao);
     await sleep(1200); // settle in the low follow band
 
     const m3 = await evalPage(async (icao) => {
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const beforeTracking = !!fl.getTrackedInfo();
       // Simulate the age-out via the shim: the plane stops arriving.
       window.__SYNTH.flights = window.__SYNTH.flights.filter((f) => f.icao !== icao);
@@ -1734,7 +1734,7 @@ async function main() {
     // snap — it stays where the follow left it. Sample heights across frames
     // (any transient flyTo would show up here), then read the settled pose.
     const m3Heights = await page.evaluate(async (frames) => {
-      const v = window.__godsEyeView.viewer;
+      const v = window.__visonTR.viewer;
       const heights = [];
       await new Promise((res) => {
         let n = 0;
@@ -1761,7 +1761,7 @@ async function main() {
     }, 90);
     await sleep(800); // any (regressed) 0.6 s flyTo would have finished by now
     const m3Final = await evalPage(() => {
-      const c = window.__godsEyeView.viewer.camera.positionCartographic;
+      const c = window.__visonTR.viewer.camera.positionCartographic;
       return {
         lonDeg: (c.longitude * 180) / Math.PI,
         latDeg: (c.latitude * 180) / Math.PI,
@@ -1795,8 +1795,8 @@ async function main() {
     // ============================================================
     console.log('\nChange 2a — landing-ghost fast cull (1 missed poll; cruise grace intact)');
     const fastCull = await evalPage(async () => {
-      const v = window.__godsEyeView.viewer;
-      const dm = window.__godsEyeView.dataManager;
+      const v = window.__visonTR.viewer;
+      const dm = window.__visonTR.dataManager;
       const fl = dm.layers.get('flights').module;
       const mil = dm.layers.get('military').module;
       const has = (mod, id) => mod.getAllPositions(2000).some((p) => p.id === id);
@@ -1848,8 +1848,8 @@ async function main() {
     // ============================================================
     console.log('\nChange 2b — tracked readout STALE cue during missed-poll grace');
     const staleCheck = await evalPage(async () => {
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const labelText = () => {
         const ent = v.trackedEntity;
         if (!ent) return null;
@@ -1857,7 +1857,7 @@ async function main() {
         // presentation model (entities are asserted native-label-free);
         // the native read stays as a fallback so this probe still fails
         // loudly if BOTH surfaces are ever absent.
-        const model = ent.gevLabelModel;
+        const model = ent.vtrLabelModel;
         if (model) return [model.title, ...(model.details || [])].filter(Boolean).join('\n');
         if (!ent.label || !ent.label.text) return null;
         const t = ent.label.text;
@@ -1900,8 +1900,8 @@ async function main() {
     // ============================================================
     console.log('\nChange 3 — ground traffic: full-alpha style, in-place transitions, fast cull');
     const ground = await evalPage(async () => {
-      const v = window.__godsEyeView.viewer;
-      const dm = window.__godsEyeView.dataManager;
+      const v = window.__visonTR.viewer;
+      const dm = window.__visonTR.dataManager;
       const fl = dm.layers.get('flights').module;
       const mil = dm.layers.get('military').module;
       const findBB = (id) => {
@@ -2068,9 +2068,9 @@ async function main() {
     const g3dFlGeoidN = geoidHeight(30.2668, -97.7445); // aaa077's lat/lon (Austin)
 
     const g3dSetup = await evalPage(() => {
-      const gev = window.__godsEyeView;
-      const scene = gev.viewer.scene;
-      const dm = gev.dataManager;
+      const vtr = window.__visonTR;
+      const scene = vtr.viewer.scene;
+      const dm = vtr.dataManager;
       // 3D models on (QA param) — the product rule under test.
       dm.layers.get('flights').module.setParams({ models3d: true });
       dm.layers.get('military').module.setParams({ models3d: true });
@@ -2078,9 +2078,9 @@ async function main() {
       // Google tileset never finishes streaming, so tilesLoaded stays false.
       let tilesForced = false;
       try {
-        if (gev.tileset) {
-          Object.defineProperty(gev.tileset, 'tilesLoaded', { value: true, configurable: true });
-          tilesForced = gev.tileset.tilesLoaded === true;
+        if (vtr.tileset) {
+          Object.defineProperty(vtr.tileset, 'tilesLoaded', { value: true, configurable: true });
+          tilesForced = vtr.tileset.tilesLoaded === true;
         } else {
           tilesForced = true; // no tileset → groundSnap treats tiles as ready
         }
@@ -2099,8 +2099,8 @@ async function main() {
     // Ingest one grounded plane per layer, then park the camera 8 km above them
     // (inside the model regime + add radius; on-screen so they win cap slots).
     const g3dIngest = await evalPage(async () => {
-      const v = window.__godsEyeView.viewer;
-      const dm = window.__godsEyeView.dataManager;
+      const v = window.__visonTR.viewer;
+      const dm = window.__visonTR.dataManager;
       const fl = dm.layers.get('flights').module;
       const mil = dm.layers.get('military').module;
       window.__SYNTH.flights.push({ icao: 'aaa077', callsign: 'GND077', lon: -97.7445, lat: 30.2668, alt: 150, vel: 0, track: 45, onGround: true });
@@ -2146,7 +2146,7 @@ async function main() {
       // In-page model finder by pick id (fleet AND tracked standalone models carry it).
       await evalPage(() => {
         window.__g3dFindModel = function (id) {
-          const v = window.__godsEyeView.viewer;
+          const v = window.__visonTR.viewer;
           let found = null;
           const walk = (coll) => {
             const n = coll.length;
@@ -2182,7 +2182,7 @@ async function main() {
       if (g3dModelsUp) {
         // (c) + handoff + (e): heights snapped, billboards handed off, snap one-shot.
         const g3dState = await evalPage(() => {
-          const v = window.__godsEyeView.viewer;
+          const v = window.__visonTR.viewer;
           const findBB = (id) => {
             let found = null;
             const walk = (coll) => {
@@ -2249,9 +2249,9 @@ async function main() {
         // 1.51 m airliner belly offset on a faster runtime.
         const ACCESSOR_SEPARATION_EPSILON_M = 0.25;
         const weld = await page.evaluate(async (frames) => {
-          const gev = window.__godsEyeView;
-          const v = gev.viewer;
-          const dm = gev.dataManager;
+          const vtr = window.__visonTR;
+          const v = vtr.viewer;
+          const dm = vtr.dataManager;
           const targets = [
             { layer: 'flights', id: 'aaa077', center: [0, 0, 0] },
             { layer: 'military', id: 'bbb177', center: [0, 0, 0] },
@@ -2328,7 +2328,7 @@ async function main() {
         // load-bearing invariant — the absolute count just pins the fixtures.
         const callsBefore = g3dState.sampleCalls;
         await page.evaluate(async (frames) => {
-          const v = window.__godsEyeView.viewer;
+          const v = window.__visonTR.viewer;
           await new Promise((res) => {
             let n = 0;
             let settled = false;
@@ -2366,10 +2366,10 @@ async function main() {
         // (d) TRACKED grounded plane → the standalone tracked model (the owner's
         // "tracked SWA143 at 0 kts stayed a 2D cyan billboard" case).
         await evalPage(() => {
-          window.__godsEyeView.dataManager.layers.get('flights').module.trackById('aaa077');
+          window.__visonTR.dataManager.layers.get('flights').module.trackById('aaa077');
         });
         const g3dTrackedUp = await page.waitForFunction(() => {
-          const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+          const fl = window.__visonTR.dataManager.layers.get('flights').module;
           const ti = fl.getTrackedInfo();
           if (!ti || ti.icao24 !== 'aaa077') return false;
           const m = window.__g3dFindModel('aaa077');
@@ -2390,7 +2390,7 @@ async function main() {
           g3dTrackedUp && trackedHeightOk, trackedDetail);
 
         // WELD (tracked): the tracked CARD anchors to the model you can see.
-        // `gevVisualPosition` is a SEPARATE accessor from `gevDisplayPosition` on
+        // `vtrVisualPosition` is a SEPARATE accessor from `vtrDisplayPosition` on
         // purpose — the latter carries the follow-camera anti-jitter contract and
         // must keep returning the cached dead-reckoned value the camera settled
         // on. So this asserts both halves: the visual accessor is welded to the
@@ -2398,7 +2398,7 @@ async function main() {
         // dead-reckoned position rather than having been quietly repurposed.
         if (g3dTrackedUp) {
           const trackedWeld = await evalPage(() => {
-            const ent = window.__godsEyeView.viewer.trackedEntity;
+            const ent = window.__visonTR.viewer.trackedEntity;
             const m = window.__g3dFindModel('aaa077');
             if (!m) return { error: 'no tracked model' };
             const matrix = m.modelMatrix;
@@ -2417,10 +2417,10 @@ async function main() {
             const at = (p) => (p ? Math.hypot(
               p.x - anchor.x, p.y - anchor.y, p.z - anchor.z,
             ) : null);
-            const visual = typeof ent?.gevVisualPosition === 'function' ? ent.gevVisualPosition() : null;
-            const display = typeof ent?.gevDisplayPosition === 'function' ? ent.gevDisplayPosition() : null;
+            const visual = typeof ent?.vtrVisualPosition === 'function' ? ent.vtrVisualPosition() : null;
+            const display = typeof ent?.vtrDisplayPosition === 'function' ? ent.vtrDisplayPosition() : null;
             return {
-              hasVisualAccessor: typeof ent?.gevVisualPosition === 'function',
+              hasVisualAccessor: typeof ent?.vtrVisualPosition === 'function',
               visualDelta: at(visual),
               displayDelta: at(display),
             };
@@ -2436,7 +2436,7 @@ async function main() {
           // anti-jitter accessor has been repurposed and the follow camera is at
           // risk. Skipped (not failed) when the DR cache is momentarily invalid.
           const displayDelta = trackedWeld.displayDelta;
-          record('weld: gevDisplayPosition still reports the dead-reckoned position (anti-jitter intact)',
+          record('weld: vtrDisplayPosition still reports the dead-reckoned position (anti-jitter intact)',
             !Number.isFinite(displayDelta) || displayDelta > ACCESSOR_SEPARATION_EPSILON_M,
             Number.isFinite(displayDelta)
               ? `displayΔ=${displayDelta.toFixed(3)} m (must stay > ${ACCESSOR_SEPARATION_EPSILON_M} m — the ground-snap split)`
@@ -2447,8 +2447,8 @@ async function main() {
       // Cleanup: untrack, restore sampleHeight, drop the grounded synthetics
       // (grounded fast-cull removes them after ONE missed poll).
       await evalPage(async () => {
-        const v = window.__godsEyeView.viewer;
-        const dm = window.__godsEyeView.dataManager;
+        const v = window.__visonTR.viewer;
+        const dm = window.__visonTR.dataManager;
         const fl = dm.layers.get('flights').module;
         const mil = dm.layers.get('military').module;
         fl.stopTracking();
@@ -2480,8 +2480,8 @@ async function main() {
     // ============================================================
     console.log('\nChange 4 — arrival rotation: moveEnd settle pass + horizon-reveal pass');
     const arrival = await evalPage(async () => {
-      const v = window.__godsEyeView.viewer;
-      const dm = window.__godsEyeView.dataManager;
+      const v = window.__visonTR.viewer;
+      const dm = window.__visonTR.dataManager;
       // 3D models OFF for this phase: a model-handed-off billboard is hidden
       // and skips rotation updates entirely — the probes need live billboards
       // (this is also the app's default state the field report came from).
@@ -2613,8 +2613,8 @@ async function main() {
 
     const dfSetup = await evalPage(async () => {
       const Cesium = await import('/node_modules/cesium/Build/Cesium/index.js');
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       // Hermetic: the ground-3d group's cleanup restored the REAL sampleHeight,
       // which would let the mesh sampler latch whatever headless GL streams.
       //
@@ -2801,8 +2801,8 @@ async function main() {
     // path only; the clamp under test reads the DISPLAY cell, which stays cold
     // here, so a broken fix cannot fake a pass.
     const dfIdentity = await evalPage(async (lat, lon, seedM) => {
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       const tried = [];
       for (let i = 0; i < window.__dfCandidates.length; i++) {
         const url = window.__dfCandidates[i];
@@ -2843,8 +2843,8 @@ async function main() {
         'the identity probe above failed — assertions would be meaningless');
     } else {
       const dfDrift = await evalPage(async (lat, lon) => {
-        const v = window.__godsEyeView.viewer;
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const v = window.__visonTR.viewer;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         const gf = window.__dfGf;
         const icao = window.__dfIcao;
         const cell = (x) => Number(x.toFixed(3));
@@ -2934,8 +2934,8 @@ async function main() {
       // it through the real DEM resolve. A control cell the same distance away,
       // which no corridor covers, must stay cold.
       const dfCorridor = await evalPage(async (lat, lon) => {
-        const v = window.__godsEyeView.viewer;
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const v = window.__visonTR.viewer;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         const gf = window.__dfGf;
         const cell = (x) => Number(x.toFixed(3));
         gf._clearMeshFloorCellsForTest(); // DEM only — sampleHeight is stubbed off
@@ -3073,9 +3073,9 @@ async function main() {
       // _trackedDisplayPosition, so selecting a correctly floored grounded
       // billboard used to swap it for an unfloored cyan target under the mesh.
       const dfTracked = await evalPage(async () => {
-        const v = window.__godsEyeView.viewer;
+        const v = window.__visonTR.viewer;
         const Cesium = await import('/node_modules/cesium/Build/Cesium/index.js');
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         const gf = window.__dfGf;
         const cell = (x) => Number(x.toFixed(3));
         const bbBefore = window.__dfFindBB('aaa097');
@@ -3311,9 +3311,9 @@ async function main() {
       // FLEET's draw-call budget only, and the tracked contact must still take
       // its model on zoom without the operator arming anything.
       const dfRetained = await evalPage(async () => {
-        const v = window.__godsEyeView.viewer;
+        const v = window.__visonTR.viewer;
         const Cesium = await import('/node_modules/cesium/Build/Cesium/index.js');
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         const gf = window.__dfGf;
         const cell = (x) => Number(x.toFixed(3));
         // This scenario INHERITS the open deterministic skin from the block
@@ -3444,9 +3444,9 @@ async function main() {
       // active. Both windows leave the BILLBOARD as the visual, so both must
       // stay floored — ownership means actually rendering.
       const dfLoading = await evalPage(async () => {
-        const v = window.__godsEyeView.viewer;
+        const v = window.__visonTR.viewer;
         const Cesium = await import('/node_modules/cesium/Build/Cesium/index.js');
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         const gf = window.__dfGf;
         const cell = (x) => Number(x.toFixed(3));
         const floorAround = (c, seeded) => {
@@ -3610,8 +3610,8 @@ async function main() {
       // display would measure the same thing half a minute later.
       const dfHold = await evalPage(async () => {
         const Cesium = await import('/node_modules/cesium/Build/Cesium/index.js');
-        const v = window.__godsEyeView.viewer;
-        const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+        const v = window.__visonTR.viewer;
+        const fl = window.__visonTR.dataManager.layers.get('flights').module;
         // `.module` is the layer OBJECT (the default export), not the module
         // namespace, so the handoff seam is not on it. Reach the namespace the
         // same way this group reaches groundFloor's: offer the URL the app
@@ -3746,8 +3746,8 @@ async function main() {
     // Cleanup: drop the synthetics and the seeded cells so nothing leaks into
     // the run-wide console/HTTP checks below.
     await evalPage(async () => {
-      const v = window.__godsEyeView.viewer;
-      const fl = window.__godsEyeView.dataManager.layers.get('flights').module;
+      const v = window.__visonTR.viewer;
+      const fl = window.__visonTR.dataManager.layers.get('flights').module;
       window.__SYNTH.flights = window.__SYNTH.flights.filter((f) => !/^aaa09/.test(f.icao));
       fl.stopTracking();
       window.__dfGf?._clearMeshFloorCellsForTest();
@@ -3797,7 +3797,7 @@ async function main() {
 async function sampleFrames(page, count, sampleFn, ...args) {
   const { values, timedOut } = await page.evaluate(async (fnStr, n, extra) => {
     const fn = new Function('return (' + fnStr + ')')();
-    const v = window.__godsEyeView.viewer;
+    const v = window.__visonTR.viewer;
     const out = [];
     let timedOut = false;
     await new Promise((resolve) => {

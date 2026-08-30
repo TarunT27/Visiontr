@@ -327,7 +327,7 @@ export function createCalibrationGizmo({ viewer, getActiveRecord, applyPatch, en
       const part = gizmoPartFrom(picked);
       if (part && entities.get(part)?.show) return part;
     } catch (err) {
-      if (typeof window !== 'undefined' && window.__gevGizmoDebug) {
+      if (typeof window !== 'undefined' && window.__vtrGizmoDebug) {
         console.debug('[CCTV:gizmo] pick threw:', err?.message || err);
       }
     }
@@ -336,12 +336,12 @@ export function createCalibrationGizmo({ viewer, getActiveRecord, applyPatch, en
     try {
       results = scene.drillPick(windowPosition, 6, 14, 14) || [];
     } catch (err) {
-      if (typeof window !== 'undefined' && window.__gevGizmoDebug) {
+      if (typeof window !== 'undefined' && window.__vtrGizmoDebug) {
         console.debug('[CCTV:gizmo] drillPick threw:', err?.message || err);
       }
       return null;
     }
-    if (typeof window !== 'undefined' && window.__gevGizmoDebug) {
+    if (typeof window !== 'undefined' && window.__vtrGizmoDebug) {
       console.debug('[CCTV:gizmo] drillPick @', windowPosition?.x, windowPosition?.y, '→',
         JSON.stringify(results.map((r) => String(r?.id?.id ?? r?.id ?? r?.primitive?.constructor?.name))));
     }
@@ -498,9 +498,9 @@ export function createCalibrationGizmo({ viewer, getActiveRecord, applyPatch, en
     endPatch(record);
   }
 
-  /** QA/debug tracing, on when the page sets `window.__gevGizmoDebug = true`. */
+  /** QA/debug tracing, on when the page sets `window.__vtrGizmoDebug = true`. */
   function debugLog(...args) {
-    if (typeof window !== 'undefined' && window.__gevGizmoDebug) {
+    if (typeof window !== 'undefined' && window.__vtrGizmoDebug) {
       console.debug('[CCTV:gizmo]', ...args);
     }
   }

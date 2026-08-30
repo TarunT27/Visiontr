@@ -30,7 +30,7 @@ import militaryFlightsLayer, {
   mapAnalystRecord as mapMilitaryAnalystRecord,
 } from './militaryFlights.js';
 import { findCompatibleHistoryIndex } from './militaryAwareness.js';
-import { createGevActionRunner } from '../voice/gevActions.js';
+import { createVtrActionRunner } from '../voice/vtrActions.js';
 import { ANALYST_LAYERS, createAnalystEngine } from './analystEngine.js';
 
 /** Strip block and line comments so source pins scan CODE, not prose. */
@@ -148,7 +148,7 @@ test('a conversion survives a poll refresh, in both the billboard and the tracke
   const icao24 = 'a1b2c3';
   setTr3b(icao24, true);
 
-  const entity = { gevLabelModel: { title: 'OLD', details: [] } };
+  const entity = { vtrLabelModel: { title: 'OLD', details: [] } };
   const billboard = {
     position: Cesium.Cartesian3.fromDegrees(-97.7, 30.2, 9_000),
     color: Cesium.Color.WHITE,
@@ -211,11 +211,11 @@ test('a conversion survives a poll refresh, in both the billboard and the tracke
     assert.equal(billboard.image, aircraftIcon('tr3b'),
       'the poll reconciler re-images through the TR-3B resolver, not the raw class');
     // Live telemetry keeps flowing; only the class label is the operator's fiction.
-    assert.match(entity.gevLabelModel.title, /^DAL123 · FL350 · 486 kts$/);
-    assert.deepEqual(entity.gevLabelModel.details.slice(0, 1), ['TR-3B'],
+    assert.match(entity.vtrLabelModel.title, /^DAL123 · FL350 · 486 kts$/);
+    assert.deepEqual(entity.vtrLabelModel.details.slice(0, 1), ['TR-3B'],
       'the tracked card class line reports TR-3B, replacing operator/type');
     assert.equal(
-      [entity.gevLabelModel.title, ...entity.gevLabelModel.details].join(' · ').includes('Southwest'),
+      [entity.vtrLabelModel.title, ...entity.vtrLabelModel.details].join(' · ').includes('Southwest'),
       false,
       'the real operator is not shown alongside the TR-3B classification',
     );
@@ -434,7 +434,7 @@ test('cockpit class filter matches a converted contact end to end', async () => 
 
   // 1) Real voice normalization: what the cockpit path actually receives.
   const seen = [];
-  const runner = createGevActionRunner({
+  const runner = createVtrActionRunner({
     viewer: {
       clock: { onTick: { addEventListener: () => () => {} } },
       scene: { canvas: { addEventListener() {}, removeEventListener() {} } },

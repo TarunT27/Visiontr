@@ -24,7 +24,7 @@ import {
 /** @constant {string} Key code used to abort a running scene */
 const ESCAPE_KEY = 'Escape';
 /** @constant {string} localStorage key for the serialized project */
-const STORAGE_KEY = 'godsEyeView.sceneProject.v2';
+const STORAGE_KEY = 'visonTR.sceneProject.v2';
 /** @constant {number} Current schema version for project migration */
 const PROJECT_VERSION = 3;
 /** @constant {number} Fallback camera flight duration per shot (seconds) */

@@ -119,7 +119,7 @@ export function buildVesselCardManifest({
     screenshot,
     dataMode,
     provenance: provenanceSlug,
-    source: dataMode === 'live' ? 'AISStream live feed' : 'GEV synthetic AIS fixture',
+    source: dataMode === 'live' ? 'AISStream live feed' : 'VTR synthetic AIS fixture',
     liveAisStreamAvailabilityAsserted: dataMode === 'live',
     launchMode: headful ? 'headful' : 'headless',
     renderer,
@@ -256,13 +256,13 @@ async function main() {
       page.on('pageerror', (err) => console.error(`    [page-error] ${err.message}`));
 
       await page.goto(APP_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForFunction(() => !!window.__godsEyeView?.viewer, { timeout: 60000 });
+      await page.waitForFunction(() => !!window.__visonTR?.viewer, { timeout: 60000 });
 
       // Frame the port (kill the intro flight first) and enable the layer.
       const syntheticRows = DATA_MODE === 'synthetic' ? syntheticVesselRows(key, port) : [];
       const dataEvidence = await page.evaluate(async ({ p, dataMode, fixtureRows }) => {
-        const gev = window.__godsEyeView;
-        const v = gev.viewer;
+        const vtr = window.__visonTR;
+        const v = vtr.viewer;
         v.camera.cancelFlight?.();
         v.scene.tweens?.removeAll?.();
         const carto = {
@@ -274,9 +274,9 @@ async function main() {
           destination: v.scene.globe.ellipsoid.cartographicToCartesian(carto),
           orientation: { heading: p.heading, pitch: p.pitch, roll: 0 },
         });
-        await gev.dataManager.setEnabled('ais-live-vessels', true);
+        await vtr.dataManager.setEnabled('ais-live-vessels', true);
         if (dataMode !== 'synthetic') return { mode: 'live', injected: 0 };
-        const seam = gev.dataManager.layers.get('ais-live-vessels')?.module?.__focusEvidence;
+        const seam = vtr.dataManager.layers.get('ais-live-vessels')?.module?.__focusEvidence;
         if (!seam?.setVessels) throw new Error('Synthetic AIS evidence seam is unavailable');
         const result = seam.setVessels(fixtureRows);
         if (!result?.ok || result.count !== fixtureRows.length) {
@@ -293,9 +293,9 @@ async function main() {
       // Wait for the photoreal tileset and at least one vessel refresh.
       const settled = await page
         .waitForFunction(() => {
-          const gev = window.__godsEyeView;
-          const t = gev.tileset;
-          const ais = gev.dataManager.getAll().find((l) => l.id === 'ais-live-vessels');
+          const vtr = window.__visonTR;
+          const t = vtr.tileset;
+          const ais = vtr.dataManager.getAll().find((l) => l.id === 'ais-live-vessels');
           const count = ais?.stats?.count ?? 0;
           return t?.tilesLoaded && count > 0;
         }, { timeout: 90000, polling: 500 })
@@ -306,7 +306,7 @@ async function main() {
       // intro flight can start AFTER the first cancelFlight and land mid-wait,
       // dragging the camera back to the boot city before the screenshot.
       await page.evaluate((p) => {
-        const v = window.__godsEyeView.viewer;
+        const v = window.__visonTR.viewer;
         v.camera.cancelFlight?.();
         v.scene.tweens?.removeAll?.();
         const carto = {
@@ -321,9 +321,9 @@ async function main() {
       }, port);
       const resettled = settled ? true : await page
         .waitForFunction(() => {
-          const gev = window.__godsEyeView;
-          const ais = gev.dataManager.getAll().find((l) => l.id === 'ais-live-vessels');
-          return gev.tileset?.tilesLoaded && (ais?.stats?.count ?? 0) > 0;
+          const vtr = window.__visonTR;
+          const ais = vtr.dataManager.getAll().find((l) => l.id === 'ais-live-vessels');
+          return vtr.tileset?.tilesLoaded && (ais?.stats?.count ?? 0) > 0;
         }, { timeout: 60000, polling: 500 })
         .then(() => true)
         .catch(() => false);
@@ -332,10 +332,10 @@ async function main() {
       await new Promise((r) => setTimeout(r, 2500));
       const expectedFixtureIds = syntheticRows.map((row) => row.mmsi);
       const overlayEvidence = await page.evaluate((fixtureIds) => {
-        const diagnostics = window.__gevWorldOverlay?.getDiagnostics?.();
-        const gl = window.__godsEyeView?.viewer?.scene?.context?._gl;
+        const diagnostics = window.__vtrWorldOverlay?.getDiagnostics?.();
+        const gl = window.__visonTR?.viewer?.scene?.context?._gl;
         const debugInfo = gl?.getExtension?.('WEBGL_debug_renderer_info');
-        const seam = window.__godsEyeView?.dataManager?.layers
+        const seam = window.__visonTR?.dataManager?.layers
           ?.get('ais-live-vessels')?.module?.__focusEvidence;
         const snapshotIds = new Set((seam?.snapshot?.() || []).map((record) => String(record.id)));
         return {

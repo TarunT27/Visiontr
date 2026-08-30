@@ -1,4 +1,4 @@
-import { createGevActionRunner, readLayerLifecycleSummary } from './gevActions.js';
+import { createVtrActionRunner, readLayerLifecycleSummary } from './vtrActions.js';
 import {
   DEFAULT_VOICE_TIER,
   VOICE_COST_LIMITS,
@@ -31,12 +31,12 @@ const DISCONNECT_GRACE_MS = 6000;
 const VIEWPORT_MAX_PIXELS = 1200 * 900; // ~1.08 MP, matches the old 1200px-wide landscape budget
 const VIEWPORT_MAX_ENCODED_BYTES = 200 * 1024; // ~200 KB encoded ceiling
 const ERROR_LOG_LIMIT = 30;
-const ERROR_STORAGE_KEY = 'gev-realtime-errors';
+const ERROR_STORAGE_KEY = 'vtr-realtime-errors';
 const DEBUG_LOG_URL = '/api/realtime/debug-log';
-// Voice cost control (repo-wide `godsEyeView.<feature>.<field>` convention;
+// Voice cost control (repo-wide `visonTR.<feature>.<field>` convention;
 // the neighbouring ERROR_STORAGE_KEY predates it).
-const VOICE_TIER_STORAGE_KEY = 'godsEyeView.voiceCost.tier';
-const VOICE_LIMITS_STORAGE_KEY = 'godsEyeView.voiceCost.limits';
+const VOICE_TIER_STORAGE_KEY = 'visonTR.voiceCost.tier';
+const VOICE_LIMITS_STORAGE_KEY = 'visonTR.voiceCost.limits';
 // The input meter is intentionally stricter than the assistant-output meter:
 // microphones carry room tone even after browser noise suppression, whereas the
 // incoming Realtime stream is already clean speech audio.
@@ -193,14 +193,14 @@ export function silenceRadioForVoice({ duckRadio, pauseRadio } = {}) {
  */
 const SUPERSEDED_RESPONSE_MEMORY = 8;
 
-export function initGevVoiceCommands({ viewer, styleManager, dataManager, sceneDirector = null, annotations = null }) {
-  if (window.__gevVoiceCommands && typeof window.__gevVoiceCommands.stop === 'function') {
-    window.__gevVoiceCommands.stop({ removeUi: true });
+export function initVtrVoiceCommands({ viewer, styleManager, dataManager, sceneDirector = null, annotations = null }) {
+  if (window.__vtrVoiceCommands && typeof window.__vtrVoiceCommands.stop === 'function') {
+    window.__vtrVoiceCommands.stop({ removeUi: true });
   }
-  const runner = createGevActionRunner({ viewer, styleManager, dataManager, sceneDirector, annotations });
+  const runner = createVtrActionRunner({ viewer, styleManager, dataManager, sceneDirector, annotations });
   const ui = createVoiceControl({ reset: true });
   const radioLayer = dataManager?.layers?.get('radio')?.module || null;
-  const controller = new GevRealtimeController({ runner, ui, radioLayer, dataManager });
+  const controller = new VtrRealtimeController({ runner, ui, radioLayer, dataManager });
   // Deferred annotation outlines finish AFTER their tool result returned. Feed the
   // final outcome (resolved / failed) into the conversation so the model can honestly
   // confirm — or correct — what it narrated about a boundary it never saw land.
@@ -221,11 +221,11 @@ export function initGevVoiceCommands({ viewer, styleManager, dataManager, sceneD
   }
   controller.syncCostUi();
   controller.bindPushToTalkShortcut();
-  window.__gevVoiceCommands = controller;
+  window.__vtrVoiceCommands = controller;
   return controller;
 }
 
-export class GevRealtimeController {
+export class VtrRealtimeController {
   constructor({ runner, ui, radioLayer = null, dataManager = null }) {
     this.runner = runner;
     this.ui = ui;
@@ -388,7 +388,7 @@ export class GevRealtimeController {
       const costState = this.costTracker.state();
       if (!costState.ratesRecognized) {
         console.warn(
-          `[GEV voice] unrecognised Realtime model "${costState.modelId}" — `
+          `[VTR voice] unrecognised Realtime model "${costState.modelId}" — `
           + 'billing this session at the most expensive known rates. Update the '
           + 'rate table in src/voice/voiceCost.js.'
         );
@@ -413,10 +413,10 @@ export class GevRealtimeController {
       this.setMicrophoneEnabled(!this.pushToTalkMode || this.pushToTalkKeyHeld);
       this.startVoiceVisualizer(localStream);
 
-      document.querySelectorAll('audio[data-gev-realtime-audio="true"]').forEach((el) => el.remove());
+      document.querySelectorAll('audio[data-vtr-realtime-audio="true"]').forEach((el) => el.remove());
       this.audioEl = document.createElement('audio');
       this.audioEl.autoplay = true;
-      this.audioEl.dataset.gevRealtimeAudio = 'true';
+      this.audioEl.dataset.vtrRealtimeAudio = 'true';
       this.audioEl.style.display = 'none';
       document.body.appendChild(this.audioEl);
 
@@ -656,7 +656,7 @@ export class GevRealtimeController {
   startVoiceVisualizer(stream) {
     this.stopVoiceVisualizer();
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    const bars = Array.from(this.ui.root.querySelectorAll('.gev-voice-visualizer span'));
+    const bars = Array.from(this.ui.root.querySelectorAll('.vtr-voice-visualizer span'));
     if (!AudioContextClass || !stream || !bars.length) return;
     try {
       const context = new AudioContextClass();
@@ -755,7 +755,7 @@ export class GevRealtimeController {
       this.visualizerAudioContext.close().catch(() => {});
       this.visualizerAudioContext = null;
     }
-    resetVoiceVisualizerBars(this.ui?.root?.querySelectorAll('.gev-voice-visualizer span'));
+    resetVoiceVisualizerBars(this.ui?.root?.querySelectorAll('.vtr-voice-visualizer span'));
   }
 
   // Fatal error path: tear the session down (stop tracks, close pc/dc, kill the
@@ -917,7 +917,7 @@ export class GevRealtimeController {
 
   sendTextCommand(text) {
     if (!this.dc || this.dc.readyState !== 'open') {
-      throw new Error('GEV voice is not connected');
+      throw new Error('VTR voice is not connected');
     }
     const cleanText = String(text || '').trim();
     if (!cleanText) return;
@@ -1022,7 +1022,7 @@ export class GevRealtimeController {
         // Never replay: the rejected turn is dropped, not retried. Re-arming
         // here is how one collision becomes the same sentence twice.
         this.pendingUserTextResponse = false;
-        console.warn('[GEV Realtime] Skipped overlapping response.create');
+        console.warn('[VTR Realtime] Skipped overlapping response.create');
         this.debugLog('response.create.skipped_active', {
           eventId: payload.event_id,
           activeResponseMessage: payload.error?.message || null,
@@ -1037,7 +1037,7 @@ export class GevRealtimeController {
       // event_id of a delete we issued.
       if (isBenignViewportDeleteError(payload, this.pendingViewportDeletes)) {
         if (payload.event_id) this.pendingViewportDeletes.delete(payload.event_id);
-        console.warn('[GEV Realtime] Ignored stale viewport item_not_found', payload.error?.code || null);
+        console.warn('[VTR Realtime] Ignored stale viewport item_not_found', payload.error?.code || null);
         this.debugLog('viewport_delete.item_not_found', {
           eventId: payload.event_id || null,
           code: payload.error?.code || null,
@@ -1282,7 +1282,7 @@ export class GevRealtimeController {
           : null;
         result = {
           ok: false,
-          error: error?.message || 'GEV command failed',
+          error: error?.message || 'VTR command failed',
           tool: call.name,
           ...(isRadioFeatureCall ? readLayerLifecycleSummary(this.dataManager, 'radio', {
             fallbackEnabled: authoritativeRadioState?.enabled,
@@ -1414,7 +1414,7 @@ export class GevRealtimeController {
         content: [
           {
             type: 'input_text',
-            text: "Current God's Eye View viewport screenshot. Read any clearly visible street, building, and place labels in the image and combine them with the structured nearbyPlaces, streetLabels, and scene context. Do not invent labels that are not legible.",
+            text: "Current VisonTR viewport screenshot. Read any clearly visible street, building, and place labels in the image and combine them with the structured nearbyPlaces, streetLabels, and scene context. Do not invent labels that are not legible.",
           },
           {
             type: 'input_image',
@@ -1695,7 +1695,7 @@ export class GevRealtimeController {
     this.errors.unshift(record);
     this.errors.length = Math.min(this.errors.length, ERROR_LOG_LIMIT);
     storeErrors(this.errors);
-    console.error('[GEV Realtime]', record);
+    console.error('[VTR Realtime]', record);
     this.debugLog('error', record);
     this.setStatus('error', formatErrorForDisplay(record));
     return record;
@@ -1719,7 +1719,7 @@ export class GevRealtimeController {
       recentErrors: this.errors.slice(),
       debugLog: {
         endpoint: DEBUG_LOG_URL,
-        file: '.gev-logs/realtime-conversations.jsonl',
+        file: '.vtr-logs/realtime-conversations.jsonl',
         sessionId: this.sessionId,
       },
       cost: this.costTracker.state(),
@@ -1870,7 +1870,7 @@ export class GevRealtimeController {
     if (state.warnCrossed) {
       // Exactly one line — the latch in the tracker guarantees it.
       console.warn(
-        `[GEV voice] session cost ${state.display} crossed the ${formatCostUsd(
+        `[VTR voice] session cost ${state.display} crossed the ${formatCostUsd(
           state.warnUsd
         )} warning threshold (model ${state.modelId}); hard cap ${formatCostUsd(state.capUsd)}.`
       );
@@ -1898,7 +1898,7 @@ export class GevRealtimeController {
     if (this.costCapStopped) return;
     this.costCapStopped = true;
     console.warn(
-      `[GEV voice] session cost ${state.display} reached the ${formatCostUsd(
+      `[VTR voice] session cost ${state.display} reached the ${formatCostUsd(
         state.capUsd
       )} cap — ending the voice session.`
     );
@@ -2036,7 +2036,7 @@ function responseInstructionForToolResult(result) {
     return 'Briefly confirm the completed Radio action, then say that Radio remains stopped as requested. Do not say the request was cancelled or that Radio is playing.';
   }
   if (result?.action === 'control_radio' && result.radioPlaybackRequested) {
-    return 'Briefly confirm any other completed GEV actions, then say “Turning on the radio.” Do not claim Radio is already playing.';
+    return 'Briefly confirm any other completed VTR actions, then say “Turning on the radio.” Do not claim Radio is already playing.';
   }
   if (result?.action === 'get_entity_context') {
     const selectedLayerId = result.selected?.layerId;
@@ -2058,7 +2058,7 @@ function responseInstructionForToolResult(result) {
       aircraftRules.push('Never infer operator, type, or route from the callsign.');
     }
     return [
-      'Answer the user naturally using the returned GEV entity context.',
+      'Answer the user naturally using the returned VTR entity context.',
       'If selected context is present, prioritize it. Otherwise summarize the most relevant in-view entities.',
       'If no entities are returned, identify the target from nearbyPlaces, place labels, streetLabels, knownLandmarks, and the viewport image.',
       'Mention only useful building/place names, streets, layer/type, location, enabled layers, and notable properties. Be concise.',
@@ -2066,7 +2066,7 @@ function responseInstructionForToolResult(result) {
     ].join(' ');
   }
   if (result?.action === 'get_current_view_state') {
-    return 'Briefly summarize the current GEV camera, active style, and relevant enabled layers. Do not repeat yourself.';
+    return 'Briefly summarize the current VTR camera, active style, and relevant enabled layers. Do not repeat yourself.';
   }
   if (result?.action === 'adjust_camera_zoom') {
     return result.ok
@@ -2100,12 +2100,12 @@ function responseInstructionForToolResult(result) {
   if (result?.action === 'clear_annotations') {
     return 'The map annotations are cleared. Continue naturally; do not announce the clear.';
   }
-  return 'Briefly confirm the completed GEV action once. Do not repeat yourself.';
+  return 'Briefly confirm the completed VTR action once. Do not repeat yourself.';
 }
 
 function createDebugSessionId() {
   const randomPart = Math.random().toString(36).slice(2, 10);
-  return `gev-${Date.now().toString(36)}-${randomPart}`;
+  return `vtr-${Date.now().toString(36)}-${randomPart}`;
 }
 
 // Idempotently tear down a MediaStream + RTCPeerConnection acquired by an
@@ -2178,7 +2178,7 @@ function isSecretLikeKey(key) {
 }
 
 async function captureViewportImage() {
-  const viewer = window.__godsEyeView?.viewer;
+  const viewer = window.__visonTR?.viewer;
   const source = viewer?.scene?.canvas || document.querySelector('#cesiumContainer .cesium-widget canvas');
   if (!source || !source.width || !source.height) return null;
   // No fresh frame (hidden, or the bounded render wait timed out) → no
@@ -2199,7 +2199,7 @@ async function captureViewportImage() {
   try {
     ctx.drawImage(source, 0, 0, width, height);
     if (isNearlyBlackFrame(ctx, width, height)) {
-      console.warn('[GEV Voice] Skipped black Cesium viewport capture');
+      console.warn('[VTR Voice] Skipped black Cesium viewport capture');
       return null;
     }
     const dataUrl = canvas.toDataURL('image/jpeg', 0.74);
@@ -2207,7 +2207,7 @@ async function captureViewportImage() {
     // would still overflow the data channel, skip the image rather than let the
     // send throw and strand the turn (M13). The caller falls through without it.
     if (estimateDataUrlBytes(dataUrl) > VIEWPORT_MAX_ENCODED_BYTES) {
-      console.warn('[GEV Voice] Skipped oversized viewport capture', {
+      console.warn('[VTR Voice] Skipped oversized viewport capture', {
         bytes: estimateDataUrlBytes(dataUrl),
         limit: VIEWPORT_MAX_ENCODED_BYTES,
       });
@@ -2317,10 +2317,10 @@ async function fetchRealtimeToken(tier = DEFAULT_VOICE_TIER) {
   const data = await response.json().catch(() => null);
   // Server echo first (authoritative, always present); the minted session
   // config is the fallback when a proxy strips headers.
-  const servedModel = response.headers?.get?.('X-GEV-Voice-Model')
+  const servedModel = response.headers?.get?.('X-VTR-Voice-Model')
     || data?.session?.model
     || null;
-  const servedTier = response.headers?.get?.('X-GEV-Voice-Tier') || null;
+  const servedTier = response.headers?.get?.('X-VTR-Voice-Tier') || null;
   if (!response.ok) {
     // OpenAI error bodies are objects ({error:{message,type,...}}); only the
     // key-absent server case is a bare string. Render either without the
@@ -2540,46 +2540,46 @@ function resetVoiceVisualizerBars(bars) {
 }
 
 function createVoiceControl({ reset = false } = {}) {
-  let root = document.getElementById('gev-voice-control');
+  let root = document.getElementById('vtr-voice-control');
   if (root && reset) {
     root.remove();
     root = null;
   }
   if (!root) {
     root = document.createElement('div');
-    root.id = 'gev-voice-control';
+    root.id = 'vtr-voice-control';
     root.dataset.status = 'idle';
     root.dataset.speaker = 'idle';
     root.innerHTML = `
-      <div class="gev-voice-heading">
-        <div class="gev-voice-kicker">AI AGENT</div>
-        <div id="gev-voice-status">OFF</div>
-        <div class="gev-voice-cost">
-          <button id="gev-voice-tier" class="gev-voice-tier-btn" type="button" aria-pressed="false" title="Voice model tier — applies next session">STD</button>
-          <span id="gev-voice-cost-value" class="gev-voice-cost-value" data-level="ok" title="Estimated session cost">~$0.00</span>
+      <div class="vtr-voice-heading">
+        <div class="vtr-voice-kicker">AI AGENT</div>
+        <div id="vtr-voice-status">OFF</div>
+        <div class="vtr-voice-cost">
+          <button id="vtr-voice-tier" class="vtr-voice-tier-btn" type="button" aria-pressed="false" title="Voice model tier — applies next session">STD</button>
+          <span id="vtr-voice-cost-value" class="vtr-voice-cost-value" data-level="ok" title="Estimated session cost">~$0.00</span>
         </div>
       </div>
-      <button id="gev-voice-button" type="button" aria-label="Voice control — hold Space to speak; click to toggle voice" aria-describedby="gev-voice-help">
-        <span class="gev-mic-orbit"><img src="/mic.svg" alt="" /></span>
-        <span class="gev-mic-label">ON/OFF</span>
+      <button id="vtr-voice-button" type="button" aria-label="Voice control — hold Space to speak; click to toggle voice" aria-describedby="vtr-voice-help">
+        <span class="vtr-mic-orbit"><img src="/mic.svg" alt="" /></span>
+        <span class="vtr-mic-label">ON/OFF</span>
       </button>
-      <div class="gev-voice-visualizer" aria-hidden="true">
+      <div class="vtr-voice-visualizer" aria-hidden="true">
         ${Array.from({ length: 15 }, (_, index) => `<span style="--bar:${index}"></span>`).join('')}
       </div>
-      <div class="gev-voice-readout">
-        <div id="gev-voice-detail">VOICE STANDBY</div>
+      <div class="vtr-voice-readout">
+        <div id="vtr-voice-detail">VOICE STANDBY</div>
       </div>
-      <div id="gev-voice-help" class="gev-voice-help-tray" role="tooltip">
-        <span class="gev-voice-help-kicker">VOICE CONTROL</span>
-        <span class="gev-voice-help-detail">Hold Space to speak · click mic to toggle voice</span>
+      <div id="vtr-voice-help" class="vtr-voice-help-tray" role="tooltip">
+        <span class="vtr-voice-help-kicker">VOICE CONTROL</span>
+        <span class="vtr-voice-help-detail">Hold Space to speak · click mic to toggle voice</span>
       </div>
-      <div class="gev-voice-error-tray" role="alert" aria-live="assertive">
-        <div class="gev-voice-error-header">
+      <div class="vtr-voice-error-tray" role="alert" aria-live="assertive">
+        <div class="vtr-voice-error-header">
           <span>VOICE SYSTEM ERROR</span>
-          <button class="gev-voice-error-dismiss" type="button">DISMISS</button>
+          <button class="vtr-voice-error-dismiss" type="button">DISMISS</button>
         </div>
-        <div id="gev-voice-error-detail"></div>
-        <div class="gev-voice-error-hint">Check microphone permission and network access, then try again.</div>
+        <div id="vtr-voice-error-detail"></div>
+        <div class="vtr-voice-error-hint">Check microphone permission and network access, then try again.</div>
       </div>
     `;
     const commandDock = document.getElementById('command-dock');
@@ -2592,19 +2592,19 @@ function createVoiceControl({ reset = false } = {}) {
     } else {
       document.body.appendChild(root);
     }
-    root.querySelector('.gev-voice-error-dismiss')?.addEventListener('click', () => {
+    root.querySelector('.vtr-voice-error-dismiss')?.addEventListener('click', () => {
       root.classList.add('error-dismissed');
     });
   }
   return {
     root,
-    button: root.querySelector('#gev-voice-button'),
-    buttonLabel: root.querySelector('.gev-mic-label'),
-    status: root.querySelector('#gev-voice-status'),
-    detail: root.querySelector('#gev-voice-detail'),
-    helpDetail: root.querySelector('.gev-voice-help-detail'),
-    errorDetail: root.querySelector('#gev-voice-error-detail'),
-    tierButton: root.querySelector('#gev-voice-tier'),
-    costValue: root.querySelector('#gev-voice-cost-value'),
+    button: root.querySelector('#vtr-voice-button'),
+    buttonLabel: root.querySelector('.vtr-mic-label'),
+    status: root.querySelector('#vtr-voice-status'),
+    detail: root.querySelector('#vtr-voice-detail'),
+    helpDetail: root.querySelector('.vtr-voice-help-detail'),
+    errorDetail: root.querySelector('#vtr-voice-error-detail'),
+    tierButton: root.querySelector('#vtr-voice-tier'),
+    costValue: root.querySelector('#vtr-voice-cost-value'),
   };
 }

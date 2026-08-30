@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   GOD'S EYE VIEW — Dark Sci-Fi UI
+   VISONTR — Dark Sci-Fi UI
    Apple meets Blade Runner
    ═══════════════════════════════════════════════ */
 
@@ -227,7 +227,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
    Styled to be unobtrusive but legible against the dark UI. */
 #cesium-credits {
   position: fixed;
-  /* Bottom-LEFT corner, mirrored from the GEV mic pill (right:36/bottom:36) so the two bottom
+  /* Bottom-LEFT corner, mirrored from the VTR mic pill (right:36/bottom:36) so the two bottom
      corners are symmetric; sits below the coordinate HUD (.hud-bottom-left, bottom:180). Was
      dead-center at the bottom, tucked under the LOCATIONS/STYLE panels. Must stay visible (Google
      /Cesium attribution ToS). */
@@ -305,13 +305,13 @@ body.cockpit-mode #cockpit-cloud-effects.active {
    and launch videos, so hiding #cesium-credits here (as it was before) shipped
    non-compliant footage. The full credit line — Cesium/Ion logo, "Google Maps",
    and the "Data attribution" link that opens the per-layer license popover —
-   stays on screen; it's already styled small and unobtrusive above. The GEV
+   stays on screen; it's already styled small and unobtrusive above. The VTR
    chrome (panels/HUD) still fades via its own rules; only the required notice
    is exempt. (Note: Cesium re-applies inline styles on the credit elements each
    frame, so the on-screen credit content is owned by Cesium's update loop, not
    CSS overrides — we deliberately don't fight it here.) */
 
-#gev-voice-control {
+#vtr-voice-control {
   position: fixed;
   right: 36px;
   bottom: 36px;
@@ -337,7 +337,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   pointer-events: auto;
 }
 
-#gev-voice-button {
+#vtr-voice-button {
   width: 72px;
   height: 34px;
   flex: 0 0 auto;
@@ -351,24 +351,24 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   cursor: pointer;
 }
 
-#gev-voice-button:hover {
+#vtr-voice-button:hover {
   color: #ffffff;
   border-color: var(--accent);
   box-shadow: 0 0 12px rgba(0, 212, 255, 0.22);
 }
 
-.gev-voice-readout {
+.vtr-voice-readout {
   min-width: 0;
   line-height: 1.2;
   text-align: right;
 }
 
-#gev-voice-status {
+#vtr-voice-status {
   font-size: 10px;
   color: var(--accent);
 }
 
-#gev-voice-detail {
+#vtr-voice-detail {
   max-width: 132px;
   margin-top: 2px;
   overflow: hidden;
@@ -378,23 +378,23 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   white-space: nowrap;
 }
 
-#gev-voice-control[data-status='listening'] {
+#vtr-voice-control[data-status='listening'] {
   border-color: rgba(92, 255, 198, 0.45);
 }
 
-#gev-voice-control[data-status='listening'] #gev-voice-status {
+#vtr-voice-control[data-status='listening'] #vtr-voice-status {
   color: #5cffc6;
 }
 
-#gev-voice-control[data-status='executing'] {
+#vtr-voice-control[data-status='executing'] {
   border-color: rgba(255, 220, 120, 0.55);
 }
 
-#gev-voice-control[data-status='executing'] #gev-voice-status {
+#vtr-voice-control[data-status='executing'] #vtr-voice-status {
   color: #ffdc78;
 }
 
-#gev-voice-control[data-status='error'] {
+#vtr-voice-control[data-status='error'] {
   align-items: flex-start;
   width: min(440px, calc(100vw - 72px));
   border-color: rgba(255, 92, 110, 0.6);
@@ -402,16 +402,16 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   border-radius: var(--panel-radius);
 }
 
-#gev-voice-control[data-status='error'] #gev-voice-status {
+#vtr-voice-control[data-status='error'] #vtr-voice-status {
   color: #ff5c6e;
 }
 
-#gev-voice-control[data-status='error'] .gev-voice-readout {
+#vtr-voice-control[data-status='error'] .vtr-voice-readout {
   flex: 1;
   text-align: left;
 }
 
-#gev-voice-control[data-status='error'] #gev-voice-detail {
+#vtr-voice-control[data-status='error'] #vtr-voice-detail {
   max-width: none;
   overflow: visible;
   color: #ffb4bd;
@@ -1110,7 +1110,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 
 /* Quantitative companion sliders share Display / Sharpen's visible rail,
  * circular thumb, glow, and value treatment while retaining a taller hit area. */
-.gev-quantitative-slider {
+.vtr-quantitative-slider {
   width: 100%;
   min-width: 0;
   height: 18px;
@@ -1121,12 +1121,12 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   outline: none;
   cursor: pointer;
 }
-.gev-quantitative-slider::-webkit-slider-runnable-track {
+.vtr-quantitative-slider::-webkit-slider-runnable-track {
   height: 3px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.08);
 }
-.gev-quantitative-slider::-webkit-slider-thumb {
+.vtr-quantitative-slider::-webkit-slider-thumb {
   width: 10px;
   height: 10px;
   margin-top: -3.5px;
@@ -1138,14 +1138,14 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   box-shadow: 0 0 6px var(--accent-glow);
   cursor: pointer;
 }
-.gev-quantitative-slider::-moz-range-track,
-.gev-quantitative-slider::-moz-range-progress {
+.vtr-quantitative-slider::-moz-range-track,
+.vtr-quantitative-slider::-moz-range-progress {
   height: 3px;
   border: 0;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.08);
 }
-.gev-quantitative-slider::-moz-range-thumb {
+.vtr-quantitative-slider::-moz-range-thumb {
   width: 10px;
   height: 10px;
   border: 0;
@@ -1154,16 +1154,16 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   box-shadow: 0 0 6px var(--accent-glow);
   cursor: pointer;
 }
-.gev-quantitative-slider:focus-visible {
+.vtr-quantitative-slider:focus-visible {
   border-radius: 4px;
   outline: 1px solid color-mix(in srgb, var(--accent) 80%, transparent);
   outline-offset: 2px;
 }
-.gev-quantitative-slider:disabled {
+.vtr-quantitative-slider:disabled {
   opacity: .42;
   cursor: not-allowed;
 }
-.gev-slider-value {
+.vtr-slider-value {
   min-width: 28px;
   color: var(--accent);
   font-family: var(--font-mono);
@@ -2048,10 +2048,10 @@ body.ui-clean-view #scene-runtime.active {
    the cascade lands.
 
    The DOM text is the truth and its node never moves. A chip label is
-   upgraded once into a permanent shell — a .gev-flap-text span holding
-   one long-lived Text node, plus an aria-hidden .gev-flap-cells
+   upgraded once into a permanent shell — a .vtr-flap-text span holding
+   one long-lived Text node, plus an aria-hidden .vtr-flap-cells
    sibling — and from then on a label change is only `node.data = next`.
-   During a cascade the host takes .gev-flap-active, which clips the
+   During a cascade the host takes .vtr-flap-active, which clips the
    real text out of view and lets the cells stand in for it. The cells
    carry no text at all: both glyphs are generated content (::before =
    outgoing, ::after = incoming), and generated content never reaches
@@ -2068,7 +2068,7 @@ body.ui-clean-view #scene-runtime.active {
 /* While the flaps play, the real text is clipped out of view but stays in
    the DOM and in the accessibility tree — same clipped-but-present treatment
    as .world-overlay-accessibility. It is never removed or reparented. */
-.gev-flap-host.gev-flap-active > .gev-flap-text {
+.vtr-flap-host.vtr-flap-active > .vtr-flap-text {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2080,10 +2080,10 @@ body.ui-clean-view #scene-runtime.active {
   border: 0;
 }
 /* Permanent sibling: empty (and so zero-width) whenever no cascade is running. */
-.gev-flap-cells {
+.vtr-flap-cells {
   white-space: pre;
 }
-.gev-flap-cell {
+.vtr-flap-cell {
   display: inline-block;
   /* Chip labels carry real spaces; a collapsed space would drop a column. */
   white-space: pre;
@@ -2094,36 +2094,36 @@ body.ui-clean-view #scene-runtime.active {
    and its index for the whole cascade instead of collapsing. Collapsing would
    stack the absolutely-positioned outgoing glyphs on one x and would let a
    later glyph slide into an earlier column. */
-.gev-flap-cell::after {
+.vtr-flap-cell::after {
   content: attr(data-flap-next);
   display: inline-block;
   white-space: pre;
 }
-.gev-flap-cell.is-flapping {
+.vtr-flap-cell.is-flapping {
   position: relative;
   /* Relative to the chip's own font size, so the foreshortening reads the
      same on the 8px status chips as it would anywhere else. */
   perspective: 4em;
 }
-.gev-flap-cell.is-flapping::before,
-.gev-flap-cell.is-flapping::after {
+.vtr-flap-cell.is-flapping::before,
+.vtr-flap-cell.is-flapping::after {
   transform-origin: 50% 50%;
   backface-visibility: hidden;
 }
-.gev-flap-cell.is-flapping::after {
-  animation: gev-flap-in var(--gev-flap-dur, 190ms)
-    cubic-bezier(0.2, 0.75, 0.25, 1) var(--gev-flap-delay, 0ms) both;
+.vtr-flap-cell.is-flapping::after {
+  animation: vtr-flap-in var(--vtr-flap-dur, 190ms)
+    cubic-bezier(0.2, 0.75, 0.25, 1) var(--vtr-flap-delay, 0ms) both;
 }
 /* Out of flow, so the outgoing glyph overlays its own column without
    affecting layout — one per column, each anchored to its own cell box. */
-.gev-flap-cell.is-flapping::before {
+.vtr-flap-cell.is-flapping::before {
   content: attr(data-flap-prev);
   position: absolute;
   top: 0;
   left: 0;
   white-space: pre;
-  animation: gev-flap-out var(--gev-flap-dur, 190ms)
-    cubic-bezier(0.2, 0.75, 0.25, 1) var(--gev-flap-delay, 0ms) both;
+  animation: vtr-flap-out var(--vtr-flap-dur, 190ms)
+    cubic-bezier(0.2, 0.75, 0.25, 1) var(--vtr-flap-delay, 0ms) both;
 }
 /* Length changes are eased, never snapped. A GROWING label reserves its new
    columns the moment the cells go in, so splitFlap.js eases from the previous
@@ -2132,19 +2132,19 @@ body.ui-clean-view #scene-runtime.active {
    from the cascade width down to the natural width — one smooth transition
    after the flaps have landed, rather than columns collapsing underneath
    them. */
-.gev-flap-sizing {
+.vtr-flap-sizing {
   display: inline-block;
-  transition: width var(--gev-flap-total, 500ms) cubic-bezier(0.2, 0.75, 0.25, 1);
+  transition: width var(--vtr-flap-total, 500ms) cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 /* The old leaf hinges down and away on the cell's midline. */
-@keyframes gev-flap-out {
+@keyframes vtr-flap-out {
   0% { transform: rotateX(0deg); opacity: 1; }
   48% { transform: rotateX(-88deg); opacity: 0.5; }
   100% { transform: rotateX(-90deg); opacity: 0; }
 }
 /* The new leaf waits for the old one to clear, then drops in and settles
    with a single small overshoot — the mechanical clack. */
-@keyframes gev-flap-in {
+@keyframes vtr-flap-in {
   0% { transform: rotateX(90deg); opacity: 0; }
   46% { transform: rotateX(90deg); opacity: 0; }
   78% { transform: rotateX(-7deg); opacity: 1; }
@@ -2155,12 +2155,12 @@ body.ui-clean-view #scene-runtime.active {
    src/splitFlap.js also checks the query and takes the instant path, so
    this is the belt to that braces. */
 @media (prefers-reduced-motion: reduce) {
-  .gev-flap-cell.is-flapping::before,
-  .gev-flap-cell.is-flapping::after {
+  .vtr-flap-cell.is-flapping::before,
+  .vtr-flap-cell.is-flapping::after {
     animation-duration: 1ms;
     animation-delay: 0ms;
   }
-  .gev-flap-sizing {
+  .vtr-flap-sizing {
     transition-duration: 1ms;
   }
 }
@@ -5790,7 +5790,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 .military-awareness-direction-arrow { position: absolute; left: 50%; top: 50%; color: #74dbff; font: 23px/1 sans-serif; transform-origin: 50% 50%; text-shadow: 0 0 5px rgba(87,223,255,0.9), 0 0 13px rgba(87,223,255,0.35); }
 .military-awareness-direction-label { position: absolute; left: 50%; top: 50%; padding: 3px 6px; border: 1px solid rgba(116,219,255,0.24); border-radius: 3px; color: #bceeff; background: rgba(5,12,20,0.68); font: 8px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; text-align: center; white-space: pre; text-shadow: 0 0 5px rgba(116,219,255,0.38); }
 
-.data-toggle-row.gev-voice-focus {
+.data-toggle-row.vtr-voice-focus {
   background: rgba(92, 255, 198, 0.1);
   box-shadow: inset 0 0 0 1px rgba(92, 255, 198, 0.72), 0 0 18px rgba(92, 255, 198, 0.18);
 }
@@ -6740,7 +6740,7 @@ body.recording-mode #data-panel,
 body.recording-mode #cctv-panel,
 body.recording-mode #radio-panel,
 body.recording-mode #global-context-panel,
-body.recording-mode #gev-voice-control,
+body.recording-mode #vtr-voice-control,
 body.recording-mode #scene-panel {
   opacity: 0 !important;
   visibility: hidden !important;
@@ -6808,13 +6808,13 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
     bottom: 120px;
   }
 
-  #gev-voice-control {
+  #vtr-voice-control {
     right: 16px;
     bottom: 16px;
     min-width: 196px;
   }
 
-  #gev-voice-detail {
+  #vtr-voice-detail {
     max-width: 112px;
   }
 
@@ -7002,7 +7002,7 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
 
 #command-dock > #location-bar,
 #command-dock > #control-panel,
-#command-dock > #gev-voice-control {
+#command-dock > #vtr-voice-control {
   position: relative;
   inset: auto;
   width: auto;
@@ -7022,7 +7022,7 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
   border-left: 1px solid rgba(123, 189, 211, 0.16);
 }
 
-#command-dock > #gev-voice-control {
+#command-dock > #vtr-voice-control {
   grid-area: voice;
   z-index: 2;
   align-self: stretch;
@@ -7039,7 +7039,7 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
     0 0 0 1px rgba(0, 212, 255, 0.08) inset;
 }
 
-#command-dock .gev-voice-kicker {
+#command-dock .vtr-voice-kicker {
   position: absolute;
   top: 6px;
   right: 14px;
@@ -7054,17 +7054,17 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
   white-space: nowrap;
 }
 
-#command-dock #gev-voice-button {
+#command-dock #vtr-voice-button {
   width: 78px;
   height: 42px;
 }
 
-#command-dock .gev-voice-readout {
+#command-dock .vtr-voice-readout {
   flex: 1;
   text-align: left;
 }
 
-#command-dock #gev-voice-detail {
+#command-dock #vtr-voice-detail {
   max-width: 110px;
 }
 
@@ -7237,7 +7237,7 @@ body.recording-mode #cesium-credits {
     border-left: 0;
   }
 
-  #command-dock > #gev-voice-control {
+  #command-dock > #vtr-voice-control {
     margin: -10px 0 0;
   }
 
@@ -7490,7 +7490,7 @@ body.recording-mode #cesium-credits {
   display: none;
 }
 
-#command-dock > #gev-voice-control {
+#command-dock > #vtr-voice-control {
   position: relative;
   inset: auto;
   z-index: 3;
@@ -7509,7 +7509,7 @@ body.recording-mode #cesium-credits {
   transform: none;
 }
 
-#command-dock .gev-voice-kicker {
+#command-dock .vtr-voice-kicker {
   position: static;
   grid-column: 2 / 4;
   grid-row: 1;
@@ -7520,7 +7520,7 @@ body.recording-mode #cesium-credits {
   text-align: center;
 }
 
-#command-dock #gev-voice-button {
+#command-dock #vtr-voice-button {
   grid-column: 1;
   grid-row: 1 / 4;
   display: flex;
@@ -7538,25 +7538,25 @@ body.recording-mode #cesium-credits {
     0 0 1rem rgba(0, 212, 255, 0.12);
 }
 
-#command-dock .gev-mic-orbit {
+#command-dock .vtr-mic-orbit {
   display: grid;
   place-items: center;
   width: 1.7rem;
   height: 1.7rem;
 }
 
-#command-dock .gev-mic-orbit img {
+#command-dock .vtr-mic-orbit img {
   width: 1.55rem;
   height: 1.55rem;
 }
 
-#command-dock .gev-mic-label {
+#command-dock .vtr-mic-label {
   font-size: 0.35rem;
   color: rgba(190, 221, 230, 0.72);
   letter-spacing: 0.02rem;
 }
 
-#command-dock .gev-voice-visualizer {
+#command-dock .vtr-voice-visualizer {
   grid-column: 2;
   grid-row: 2;
   display: flex;
@@ -7568,7 +7568,7 @@ body.recording-mode #cesium-credits {
   border-bottom: 1px solid rgba(54, 220, 255, 0.34);
 }
 
-#command-dock .gev-voice-visualizer span {
+#command-dock .vtr-voice-visualizer span {
   width: 0.18rem;
   height: 0.55rem;
   background: linear-gradient(to top, #28b9db, #71eaff);
@@ -7576,22 +7576,22 @@ body.recording-mode #cesium-credits {
   transform-origin: bottom;
 }
 
-#command-dock .gev-voice-visualizer span:nth-child(3n) { height: 1.35rem; }
-#command-dock .gev-voice-visualizer span:nth-child(4n) { height: 0.95rem; }
-#command-dock .gev-voice-visualizer span:nth-child(5n) { height: 1.7rem; }
-#command-dock .gev-voice-visualizer span:nth-child(7n) { height: 0.75rem; }
+#command-dock .vtr-voice-visualizer span:nth-child(3n) { height: 1.35rem; }
+#command-dock .vtr-voice-visualizer span:nth-child(4n) { height: 0.95rem; }
+#command-dock .vtr-voice-visualizer span:nth-child(5n) { height: 1.7rem; }
+#command-dock .vtr-voice-visualizer span:nth-child(7n) { height: 0.75rem; }
 
-#command-dock #gev-voice-control[data-status='listening'] .gev-voice-visualizer span,
-#command-dock #gev-voice-control[data-status='executing'] .gev-voice-visualizer span {
-  animation: gev-voice-bar 680ms ease-in-out infinite alternate;
+#command-dock #vtr-voice-control[data-status='listening'] .vtr-voice-visualizer span,
+#command-dock #vtr-voice-control[data-status='executing'] .vtr-voice-visualizer span {
+  animation: vtr-voice-bar 680ms ease-in-out infinite alternate;
   animation-delay: calc(var(--bar) * -45ms);
 }
 
-#command-dock .gev-voice-readout {
+#command-dock .vtr-voice-readout {
   display: contents;
 }
 
-#command-dock #gev-voice-status {
+#command-dock #vtr-voice-status {
   grid-column: 3;
   grid-row: 2;
   align-self: start;
@@ -7600,7 +7600,7 @@ body.recording-mode #cesium-credits {
   text-align: right;
 }
 
-#command-dock #gev-voice-detail {
+#command-dock #vtr-voice-detail {
   grid-column: 2 / 4;
   grid-row: 3;
   align-self: center;
@@ -7616,7 +7616,7 @@ body.recording-mode #cesium-credits {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes gev-voice-bar {
+@keyframes vtr-voice-bar {
   from { transform: scaleY(0.35); opacity: 0.5; }
   to { transform: scaleY(1); opacity: 1; }
 }
@@ -7658,18 +7658,18 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
     border: 0;
   }
 
-  #command-dock:has(#location-bar:not(.collapsed)) > #gev-voice-control,
-  #command-dock:has(#control-panel:not(.collapsed)) > #gev-voice-control {
+  #command-dock:has(#location-bar:not(.collapsed)) > #vtr-voice-control,
+  #command-dock:has(#control-panel:not(.collapsed)) > #vtr-voice-control {
     flex-basis: 4.75rem;
     width: 4.75rem;
   }
 
-  #command-dock:has(#location-bar:not(.collapsed)) .gev-voice-visualizer,
-  #command-dock:has(#location-bar:not(.collapsed)) .gev-voice-kicker,
-  #command-dock:has(#location-bar:not(.collapsed)) .gev-voice-readout,
-  #command-dock:has(#control-panel:not(.collapsed)) .gev-voice-visualizer,
-  #command-dock:has(#control-panel:not(.collapsed)) .gev-voice-kicker,
-  #command-dock:has(#control-panel:not(.collapsed)) .gev-voice-readout {
+  #command-dock:has(#location-bar:not(.collapsed)) .vtr-voice-visualizer,
+  #command-dock:has(#location-bar:not(.collapsed)) .vtr-voice-kicker,
+  #command-dock:has(#location-bar:not(.collapsed)) .vtr-voice-readout,
+  #command-dock:has(#control-panel:not(.collapsed)) .vtr-voice-visualizer,
+  #command-dock:has(#control-panel:not(.collapsed)) .vtr-voice-kicker,
+  #command-dock:has(#control-panel:not(.collapsed)) .vtr-voice-readout {
     visibility: hidden;
   }
 
@@ -7857,7 +7857,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   bottom: calc(100% + 1.2rem + var(--dock-lower-pinned-height));
 }
 
-#command-dock.dock-has-pinned-tray .gev-voice-error-tray {
+#command-dock.dock-has-pinned-tray .vtr-voice-error-tray {
   bottom: calc(100% + 1.7rem + var(--dock-pinned-stack-height));
 }
 
@@ -7872,7 +7872,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   font-size: 0.68rem;
 }
 
-#command-dock > #gev-voice-control {
+#command-dock > #vtr-voice-control {
   grid-template-columns: 3rem minmax(0, 1fr);
   grid-template-rows: 0.8rem 2.25rem 0.85rem;
   gap: 0.12rem 0.28rem;
@@ -7885,7 +7885,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   overflow: visible;
 }
 
-#command-dock .gev-voice-heading {
+#command-dock .vtr-voice-heading {
   grid-column: 2;
   grid-row: 1;
   display: flex;
@@ -7895,7 +7895,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   min-width: 0;
 }
 
-#command-dock .gev-voice-kicker {
+#command-dock .vtr-voice-kicker {
   position: static;
   padding-right: 0;
   font-size: 0.46rem;
@@ -7903,7 +7903,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   letter-spacing: 0.08rem;
 }
 
-#command-dock #gev-voice-button {
+#command-dock #vtr-voice-button {
   grid-column: 1;
   grid-row: 1 / 4;
   align-self: center;
@@ -7915,7 +7915,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   box-shadow: none;
 }
 
-#command-dock .gev-mic-orbit {
+#command-dock .vtr-mic-orbit {
   flex: 0 0 2.45rem;
   width: 2.45rem;
   height: 2.45rem;
@@ -7927,14 +7927,14 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   box-shadow: 0 0 0 0.18rem rgba(0, 212, 255, 0.06), 0 0 0.9rem rgba(0, 212, 255, 0.12);
 }
 
-#command-dock .gev-mic-label {
+#command-dock .vtr-mic-label {
   display: block;
   margin-top: 0.18rem;
   font-size: 0.42rem;
   letter-spacing: 0.035rem;
 }
 
-#command-dock .gev-voice-visualizer {
+#command-dock .vtr-voice-visualizer {
   grid-column: 2;
   grid-row: 2;
   align-self: stretch;
@@ -7948,15 +7948,15 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   transition: opacity 180ms ease;
 }
 
-#command-dock #gev-voice-control[data-status='connecting'] .gev-voice-visualizer,
-#command-dock #gev-voice-control[data-status='listening'] .gev-voice-visualizer,
-#command-dock #gev-voice-control[data-status='executing'] .gev-voice-visualizer {
+#command-dock #vtr-voice-control[data-status='connecting'] .vtr-voice-visualizer,
+#command-dock #vtr-voice-control[data-status='listening'] .vtr-voice-visualizer,
+#command-dock #vtr-voice-control[data-status='executing'] .vtr-voice-visualizer {
   visibility: visible;
   opacity: 1;
   transform: none;
 }
 
-#command-dock #gev-voice-status {
+#command-dock #vtr-voice-status {
   position: static;
   width: auto;
   padding-top: 0;
@@ -7965,7 +7965,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   text-align: left;
 }
 
-#command-dock #gev-voice-detail {
+#command-dock #vtr-voice-detail {
   grid-column: 2;
   grid-row: 3;
   align-self: start;
@@ -7980,14 +7980,14 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   white-space: nowrap;
 }
 
-#command-dock #gev-voice-control[data-status='connecting'] #gev-voice-detail,
-#command-dock #gev-voice-control[data-status='listening'] #gev-voice-detail,
-#command-dock #gev-voice-control[data-status='executing'] #gev-voice-detail {
+#command-dock #vtr-voice-control[data-status='connecting'] #vtr-voice-detail,
+#command-dock #vtr-voice-control[data-status='listening'] #vtr-voice-detail,
+#command-dock #vtr-voice-control[data-status='executing'] #vtr-voice-detail {
   grid-row: 3;
   font-size: 0.43rem;
 }
 
-#command-dock #gev-voice-control[data-status='error'] {
+#command-dock #vtr-voice-control[data-status='error'] {
   display: grid;
   align-items: initial;
   width: var(--dock-voice-width);
@@ -7995,11 +7995,11 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   border-radius: 0.4rem;
 }
 
-#command-dock #gev-voice-control[data-status='error'] .gev-voice-readout {
+#command-dock #vtr-voice-control[data-status='error'] .vtr-voice-readout {
   display: contents;
 }
 
-#command-dock #gev-voice-control[data-status='error'] #gev-voice-detail {
+#command-dock #vtr-voice-control[data-status='error'] #vtr-voice-detail {
   max-width: none;
   overflow: hidden;
   color: #ffb4bd;
@@ -8009,7 +8009,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   white-space: nowrap;
 }
 
-#command-dock .gev-voice-error-tray {
+#command-dock .vtr-voice-error-tray {
   position: absolute;
   bottom: calc(100% + 0.7rem);
   left: 50%;
@@ -8031,14 +8031,14 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   transition: opacity 180ms ease, visibility 180ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-#command-dock #gev-voice-control[data-status='error']:not(.error-dismissed) .gev-voice-error-tray {
+#command-dock #vtr-voice-control[data-status='error']:not(.error-dismissed) .vtr-voice-error-tray {
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0) scale(1);
 }
 
-#command-dock .gev-voice-error-header {
+#command-dock .vtr-voice-error-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -8050,7 +8050,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   letter-spacing: 0.1rem;
 }
 
-#command-dock .gev-voice-error-dismiss {
+#command-dock .vtr-voice-error-dismiss {
   padding: 0.25rem 0.42rem;
   color: rgba(255, 220, 224, 0.72);
   background: rgba(255, 255, 255, 0.04);
@@ -8062,7 +8062,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   cursor: pointer;
 }
 
-#command-dock #gev-voice-error-detail {
+#command-dock #vtr-voice-error-detail {
   margin-top: 0.65rem;
   color: rgba(255, 232, 235, 0.92);
   font-family: var(--font-sans);
@@ -8070,7 +8070,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   line-height: 1.45;
 }
 
-#command-dock .gev-voice-error-hint {
+#command-dock .vtr-voice-error-hint {
   margin-top: 0.5rem;
   color: rgba(255, 196, 203, 0.58);
   font-family: var(--font-mono);
@@ -8118,7 +8118,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
     max-width: calc(100vw - 1.5rem);
   }
 
-  #command-dock .gev-voice-error-tray {
+  #command-dock .vtr-voice-error-tray {
     width: min(24rem, calc(100vw - 1.5rem));
   }
 }
@@ -8290,18 +8290,18 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
     border: inherit;
   }
 
-  #command-dock:has(#location-bar:not(.collapsed)) > #gev-voice-control,
-  #command-dock:has(#control-panel:not(.collapsed)) > #gev-voice-control {
+  #command-dock:has(#location-bar:not(.collapsed)) > #vtr-voice-control,
+  #command-dock:has(#control-panel:not(.collapsed)) > #vtr-voice-control {
     flex-basis: var(--dock-voice-width);
     width: var(--dock-voice-width);
   }
 
-  #command-dock:has(#location-bar:not(.collapsed)) .gev-voice-visualizer,
-  #command-dock:has(#location-bar:not(.collapsed)) .gev-voice-kicker,
-  #command-dock:has(#location-bar:not(.collapsed)) .gev-voice-readout,
-  #command-dock:has(#control-panel:not(.collapsed)) .gev-voice-visualizer,
-  #command-dock:has(#control-panel:not(.collapsed)) .gev-voice-kicker,
-  #command-dock:has(#control-panel:not(.collapsed)) .gev-voice-readout {
+  #command-dock:has(#location-bar:not(.collapsed)) .vtr-voice-visualizer,
+  #command-dock:has(#location-bar:not(.collapsed)) .vtr-voice-kicker,
+  #command-dock:has(#location-bar:not(.collapsed)) .vtr-voice-readout,
+  #command-dock:has(#control-panel:not(.collapsed)) .vtr-voice-visualizer,
+  #command-dock:has(#control-panel:not(.collapsed)) .vtr-voice-kicker,
+  #command-dock:has(#control-panel:not(.collapsed)) .vtr-voice-readout {
     visibility: visible;
   }
 
@@ -8459,36 +8459,36 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 /* Five-pixel standby baseline; live microphone analysis sets --audio-level. */
-#command-dock .gev-voice-visualizer span,
-#command-dock .gev-voice-visualizer span:nth-child(3n),
-#command-dock .gev-voice-visualizer span:nth-child(4n),
-#command-dock .gev-voice-visualizer span:nth-child(5n),
-#command-dock .gev-voice-visualizer span:nth-child(7n) {
+#command-dock .vtr-voice-visualizer span,
+#command-dock .vtr-voice-visualizer span:nth-child(3n),
+#command-dock .vtr-voice-visualizer span:nth-child(4n),
+#command-dock .vtr-voice-visualizer span:nth-child(5n),
+#command-dock .vtr-voice-visualizer span:nth-child(7n) {
   height: var(--audio-level, 5px);
   opacity: var(--audio-opacity, 0.56);
   animation: none;
   transition: height 70ms linear, opacity 90ms linear;
 }
 
-#command-dock #gev-voice-control[data-status='listening'] .gev-voice-visualizer span,
-#command-dock #gev-voice-control[data-status='executing'] .gev-voice-visualizer span {
+#command-dock #vtr-voice-control[data-status='listening'] .vtr-voice-visualizer span,
+#command-dock #vtr-voice-control[data-status='executing'] .vtr-voice-visualizer span {
   animation: none;
 }
 
-#command-dock #gev-voice-control[data-speaker='user'] :is(#gev-voice-status, #gev-voice-detail) {
+#command-dock #vtr-voice-control[data-speaker='user'] :is(#vtr-voice-status, #vtr-voice-detail) {
   color: #ffbf69;
 }
 
-#command-dock #gev-voice-control[data-speaker='user'] .gev-voice-visualizer span {
+#command-dock #vtr-voice-control[data-speaker='user'] .vtr-voice-visualizer span {
   background: linear-gradient(to top, #d98a35, #ffcf8a);
   box-shadow: 0 0 0.35rem rgba(255, 191, 105, 0.32);
 }
 
-#command-dock #gev-voice-control[data-speaker='ai'] :is(#gev-voice-status, #gev-voice-detail) {
+#command-dock #vtr-voice-control[data-speaker='ai'] :is(#vtr-voice-status, #vtr-voice-detail) {
   color: var(--accent);
 }
 
-#command-dock #gev-voice-control[data-speaker='ai'] .gev-voice-visualizer span {
+#command-dock #vtr-voice-control[data-speaker='ai'] .vtr-voice-visualizer span {
   background: linear-gradient(to top, #28b9db, #71eaff);
   box-shadow: 0 0 0.35rem rgba(54, 220, 255, 0.28);
 }
@@ -8551,7 +8551,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 /* Keep the microphone neutral at rest; cyan signals hover and live states. */
-#command-dock .gev-mic-orbit {
+#command-dock .vtr-mic-orbit {
   background: rgba(232, 234, 237, 0.04);
   border-color: rgba(232, 234, 237, 0.36);
   box-shadow:
@@ -8560,29 +8560,29 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-#command-dock .gev-mic-orbit img {
+#command-dock .vtr-mic-orbit img {
   filter: grayscale(1) saturate(0) brightness(1.65);
   opacity: 0.68;
   transition: filter var(--transition-fast), opacity var(--transition-fast);
 }
 
-#command-dock #gev-voice-button:hover .gev-mic-orbit,
-#command-dock #gev-voice-control:is(
+#command-dock #vtr-voice-button:hover .vtr-mic-orbit,
+#command-dock #vtr-voice-control:is(
   [data-status='connecting'],
   [data-status='listening']:not([data-microphone='muted']),
   [data-status='executing']
-) .gev-mic-orbit {
+) .vtr-mic-orbit {
   background: rgba(0, 212, 255, 0.06);
   border-color: rgba(0, 212, 255, 0.48);
   box-shadow: 0 0 0 0.18rem rgba(0, 212, 255, 0.06), 0 0 0.9rem rgba(0, 212, 255, 0.12);
 }
 
-#command-dock #gev-voice-button:hover .gev-mic-orbit img,
-#command-dock #gev-voice-control:is(
+#command-dock #vtr-voice-button:hover .vtr-mic-orbit img,
+#command-dock #vtr-voice-control:is(
   [data-status='connecting'],
   [data-status='listening']:not([data-microphone='muted']),
   [data-status='executing']
-) .gev-mic-orbit img {
+) .vtr-mic-orbit img {
   filter: none;
   opacity: 1;
 }
@@ -8681,7 +8681,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   display: none;
 }
 
-#gev-voice-control .gev-voice-help-tray {
+#vtr-voice-control .vtr-voice-help-tray {
   position: absolute;
   bottom: calc(100% + 0.7rem);
   left: 50%;
@@ -8714,7 +8714,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
     transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-#gev-voice-control .gev-voice-help-kicker {
+#vtr-voice-control .vtr-voice-help-kicker {
   color: rgba(54, 220, 255, 0.72);
   font-family: var(--font-mono);
   font-size: 0.46rem;
@@ -8722,26 +8722,26 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   letter-spacing: 0.1rem;
 }
 
-#gev-voice-control .gev-voice-help-detail {
+#vtr-voice-control .vtr-voice-help-detail {
   font-family: var(--font-sans);
   font-size: 0.7rem;
   line-height: 1.35;
   white-space: nowrap;
 }
 
-#gev-voice-control:not([data-status='error']):hover .gev-voice-help-tray,
-#gev-voice-control:not([data-status='error']) #gev-voice-button:focus-visible ~ .gev-voice-help-tray {
+#vtr-voice-control:not([data-status='error']):hover .vtr-voice-help-tray,
+#vtr-voice-control:not([data-status='error']) #vtr-voice-button:focus-visible ~ .vtr-voice-help-tray {
   visibility: visible;
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
 }
 
-#command-dock.dock-has-pinned-tray .gev-voice-help-tray {
+#command-dock.dock-has-pinned-tray .vtr-voice-help-tray {
   bottom: calc(100% + 1.7rem + var(--dock-pinned-stack-height));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #gev-voice-control .gev-voice-help-tray {
+  #vtr-voice-control .vtr-voice-help-tray {
     transition: none;
   }
   .radio-tuner-needle,
@@ -8772,10 +8772,10 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 /* ------------------------------------------------------------------ *
  * Voice cost control — model-tier toggle + running session estimate.
  * Appended (not woven into the dock passes above) so the three existing
- * #gev-voice-control cascades stay untouched; these rules only add the
- * new .gev-voice-cost cluster inside the existing .gev-voice-heading row.
+ * #vtr-voice-control cascades stay untouched; these rules only add the
+ * new .vtr-voice-cost cluster inside the existing .vtr-voice-heading row.
  * ------------------------------------------------------------------ */
-.gev-voice-cost {
+.vtr-voice-cost {
   display: flex;
   align-items: center;
   gap: 0.22rem;
@@ -8783,7 +8783,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   flex: 0 0 auto;
 }
 
-.gev-voice-tier-btn {
+.vtr-voice-tier-btn {
   padding: 0 0.24rem;
   height: 0.72rem;
   min-width: 1.55rem;
@@ -8803,7 +8803,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
     background var(--transition-fast);
 }
 
-.gev-voice-tier-btn:hover {
+.vtr-voice-tier-btn:hover {
   color: var(--text-primary);
   border-color: rgba(0, 212, 255, 0.6);
   background: rgba(0, 212, 255, 0.12);
@@ -8811,13 +8811,13 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 
 /* MINI engaged — amber, distinct from the cyan default so the cheaper tier
    is legible at a glance without reading the label. */
-.gev-voice-tier-btn[aria-pressed='true'] {
+.vtr-voice-tier-btn[aria-pressed='true'] {
   color: #ffc46b;
   border-color: rgba(255, 196, 107, 0.55);
   background: rgba(255, 196, 107, 0.12);
 }
 
-.gev-voice-cost-value {
+.vtr-voice-cost-value {
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: 0.4rem;
@@ -8827,23 +8827,23 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   transition: color var(--transition-fast);
 }
 
-.gev-voice-cost-value[data-level='warn'] {
+.vtr-voice-cost-value[data-level='warn'] {
   color: #ffc46b;
 }
 
-.gev-voice-cost-value[data-level='cap'] {
+.vtr-voice-cost-value[data-level='cap'] {
   color: #ff6b6b;
   font-weight: 600;
 }
 
 /* The dock heading row is 0.8rem tall; keep the cluster inside it. */
-#command-dock .gev-voice-cost {
+#command-dock .vtr-voice-cost {
   max-height: 0.8rem;
 }
 
 /* The dock collapses the kicker/readout when a tray is open — the cost
    cluster follows the same rule so the row never overflows. */
-#command-dock.tray-open .gev-voice-cost {
+#command-dock.tray-open .vtr-voice-cost {
   display: none;
 }
 

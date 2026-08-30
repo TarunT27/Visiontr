@@ -34,10 +34,10 @@ const CLASSIFY = Cesium.ClassificationType.CESIUM_3D_TILE;
 const CLAMP = Cesium.HeightReference.CLAMP_TO_GROUND;
 
 export function createWorldAnnotationRenderer(viewer) {
-  const dataSource = new Cesium.CustomDataSource('gev-annotations');
+  const dataSource = new Cesium.CustomDataSource('vtr-annotations');
   viewer.dataSources.add(dataSource);
 
-  // Register the GevRouteFlow fabric once so Cesium's Material.fromType() can build the
+  // Register the VtrRouteFlow fabric once so Cesium's Material.fromType() can build the
   // material the route pipeline renders. The animated `time` uniform is read straight
   // from performance.now() inside FlowMaterialProperty.getValue (which Cesium calls each
   // rendered frame with the live uniforms object), so the dashes flow with no extra
@@ -294,7 +294,7 @@ function pulseFactor() {
 function makeRouteFlowMaterial(colorCss) {
   return new Cesium.Material({
     fabric: {
-      type: 'GevRouteFlow',
+      type: 'VtrRouteFlow',
       uniforms: {
         color: Cesium.Color.fromCssColorString(colorCss).withAlpha(0.95),
         time: 0.0,
@@ -320,18 +320,18 @@ function makeRouteFlowMaterial(colorCss) {
 }
 
 let _flowFabricRegistered = false;
-/** Register the GevRouteFlow fabric ONCE so Cesium's `Material.fromType('GevRouteFlow')`
+/** Register the VtrRouteFlow fabric ONCE so Cesium's `Material.fromType('VtrRouteFlow')`
  *  can build the material the render pipeline uses. Constructing one Material with the
  *  fabric caches it under its type name. */
 function ensureFlowFabricRegistered() {
   if (_flowFabricRegistered) return;
-  makeRouteFlowMaterial('#ffffff'); // side effect: registers the 'GevRouteFlow' type
+  makeRouteFlowMaterial('#ffffff'); // side effect: registers the 'VtrRouteFlow' type
   _flowFabricRegistered = true;
 }
 
 /**
  * MaterialProperty for the animated route. Cesium builds the rendered Material once
- * from getType() (our registered GevRouteFlow fabric), then EACH FRAME calls
+ * from getType() (our registered VtrRouteFlow fabric), then EACH FRAME calls
  * getValue(time, material.uniforms) and uses whatever we write INTO that uniforms
  * object — it ignores the return value. So getValue writes color/time/repeat/duty/
  * speed straight onto `result` (the live uniforms). Writing the animated `time` here
@@ -348,7 +348,7 @@ Object.defineProperties(FlowMaterialProperty.prototype, {
   definitionChanged: { get() { return this._definitionChanged; } },
 });
 FlowMaterialProperty.prototype.getType = function getType() {
-  return 'GevRouteFlow';
+  return 'VtrRouteFlow';
 };
 FlowMaterialProperty.prototype.getValue = function getValue(time, result) {
   // `result` IS the live uniforms object Cesium renders — write into it directly.

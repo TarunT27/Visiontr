@@ -718,7 +718,7 @@ function _clearTracking(skipViewerUntrack = false, { origin = 'programmatic' } =
   _syncIssOverlay();
   clearTrackedSubjectContext('satellites');
   _contextRefreshedAtMs = 0;
-  _emitAwarenessEvent('gev:awareness-subject-cleared', {
+  _emitAwarenessEvent('vtr:awareness-subject-cleared', {
     layerId: 'satellites', id: clearedNorad, origin,
   });
 }
@@ -940,14 +940,14 @@ function _updateTrackedSatelliteLabelModel(fallbackAltitudeM = null) {
     const extra = companions.length - 1;
     details.push(`DOCKED · ${companions[0]}${extra > 0 ? ` · +${extra}` : ''}`);
   }
-  const current = _trackedEntity.gevLabelModel;
+  const current = _trackedEntity.vtrLabelModel;
   // Compare the WHOLE detail array: comparing only `details[0]` swallowed any
   // change confined to the companions line, so the card would never republish.
   const unchanged = current?.title === title
     && current?.details?.length === details.length
     && details.every((line, index) => current.details[index] === line);
   if (unchanged) return;
-  _trackedEntity.gevLabelModel = { title, details, accent: '#ffd84d' };
+  _trackedEntity.vtrLabelModel = { title, details, accent: '#ffd84d' };
   refreshTrackedReadout(_trackedEntity);
 }
 
@@ -1004,12 +1004,12 @@ function _trackSatellite(noradId, { origin = 'programmatic' } = {}) {
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
     },
   });
-  _trackedEntity.gevSelectionOrigin = origin;
-  _trackedEntity.gevTrackedId = `satellites:${noradId}`;
-  _trackedEntity.gevDisplayPosition = _trackedDisplayCached;
+  _trackedEntity.vtrSelectionOrigin = origin;
+  _trackedEntity.vtrTrackedId = `satellites:${noradId}`;
+  _trackedEntity.vtrDisplayPosition = _trackedDisplayCached;
   _updateTrackedSatelliteLabelModel(initialPos?.altitude ?? null);
 
-  _emitAwarenessEvent('gev:awareness-subject-selected', {
+  _emitAwarenessEvent('vtr:awareness-subject-selected', {
     layerId: 'satellites',
     id: noradId,
     label: name,
@@ -2207,7 +2207,7 @@ function _installClickHandler(viewer) {
       if (!_enabled) return;
       if (_trackedNorad && _viewer && _viewer.trackedEntity && _viewer.trackedEntity !== _trackedEntity) {
         _clearTracking(true, {
-          origin: _viewer.trackedEntity?.gevSelectionOrigin || 'programmatic',
+          origin: _viewer.trackedEntity?.vtrSelectionOrigin || 'programmatic',
         });
       }
     });

@@ -92,7 +92,7 @@ export const WORLD_OVERLAY_OCCLUDER_SELECTORS = Object.freeze([
   '#right-context-rail',
   '#pp-toggles',
   '#command-dock',
-  '#gev-voice-control',
+  '#vtr-voice-control',
   '#cesium-credits',
   '.hud-top-left',
   '.hud-top-right',
@@ -2183,7 +2183,7 @@ function drawWorldOverlay() {
 
 function createDevFacade() {
   if (typeof window === 'undefined' || import.meta.env?.DEV !== true) return;
-  window.__gevWorldOverlay = { getDiagnostics: getWorldOverlayDiagnostics };
+  window.__vtrWorldOverlay = { getDiagnostics: getWorldOverlayDiagnostics };
 }
 
 /**
@@ -2208,7 +2208,7 @@ export function initWorldOverlay(viewer) {
     _cockpitActive = event?.detail?.active === true;
     invalidateHost();
   };
-  window.addEventListener('gev:cockpit-mode-changed', _cockpitModeHandler);
+  window.addEventListener('vtr:cockpit-mode-changed', _cockpitModeHandler);
   _removePostRender = viewer.scene.postRender.addEventListener(drawWorldOverlay);
   if (viewer.camera?.moveEnd?.addEventListener) {
     _removeMoveEnd = viewer.camera.moveEnd.addEventListener(() => invalidateHost());
@@ -2237,7 +2237,7 @@ export function destroyWorldOverlay() {
   _removeMoveEnd?.();
   _removeMoveEnd = null;
   if (_cockpitModeHandler && typeof window !== 'undefined') {
-    window.removeEventListener('gev:cockpit-mode-changed', _cockpitModeHandler);
+    window.removeEventListener('vtr:cockpit-mode-changed', _cockpitModeHandler);
   }
   _cockpitModeHandler = null;
   if (_windowResizeHandler && typeof window !== 'undefined') {
@@ -2258,8 +2258,8 @@ export function destroyWorldOverlay() {
   // container so its `screen` blend reaches the scene), so it has to be torn
   // down explicitly rather than by the root's removal.
   _detectionSurface?.remove?.();
-  if (typeof window !== 'undefined' && window.__gevWorldOverlay?.getDiagnostics === getWorldOverlayDiagnostics) {
-    delete window.__gevWorldOverlay;
+  if (typeof window !== 'undefined' && window.__vtrWorldOverlay?.getDiagnostics === getWorldOverlayDiagnostics) {
+    delete window.__vtrWorldOverlay;
   }
   _sources.clear();
   _sourceList.length = 0;

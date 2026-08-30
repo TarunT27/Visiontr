@@ -283,10 +283,10 @@ export function readLayerLifecycleSummary(dataManager, layerId, { fallbackEnable
   };
 }
 
-export function createGevActionRunner({ viewer, styleManager, dataManager, sceneDirector = null, annotations = null }) {
+export function createVtrActionRunner({ viewer, styleManager, dataManager, sceneDirector = null, annotations = null }) {
   installViewTargetPrewarm(viewer);
   initCameraVerbs(viewer, getViewTargetCartesian);
-  return async function runGevAction(name, rawArgs = {}, runOptions = {}) {
+  return async function runVtrAction(name, rawArgs = {}, runOptions = {}) {
     const args = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
     const current = () => !runOptions.signal?.aborted
       && (typeof runOptions.isCurrent !== 'function' || runOptions.isCurrent());
@@ -445,7 +445,7 @@ export function createGevActionRunner({ viewer, styleManager, dataManager, scene
           longitude: Number(args.longitude),
         } : {}),
       };
-      const layer = await runGevAction('set_layer_visibility', {
+      const layer = await runVtrAction('set_layer_visibility', {
         layerId,
         enabled: true,
       }, runOptions);
@@ -460,7 +460,7 @@ export function createGevActionRunner({ viewer, styleManager, dataManager, scene
         };
       }
 
-      const location = await runGevAction('fly_to_location', locationArgs, runOptions);
+      const location = await runVtrAction('fly_to_location', locationArgs, runOptions);
       if (location?.ok !== true || !current()) {
         return {
           ok: false,
@@ -918,7 +918,7 @@ export function createGevActionRunner({ viewer, styleManager, dataManager, scene
       return clearAnnotations(annotations);
     }
 
-    throw new Error(`Unknown GEV tool: ${name}`);
+    throw new Error(`Unknown VTR tool: ${name}`);
   };
 }
 
@@ -1942,8 +1942,8 @@ export async function getBasemapLabelContext(viewer) {
 }
 
 function installViewTargetPrewarm(viewer) {
-  if (viewer.__gevViewTargetPrewarmInstalled) return;
-  viewer.__gevViewTargetPrewarmInstalled = true;
+  if (viewer.__vtrViewTargetPrewarmInstalled) return;
+  viewer.__vtrViewTargetPrewarmInstalled = true;
   let timer = null;
   let reportedPrewarmFailure = false;
   viewer.camera.moveEnd.addEventListener(() => {
@@ -2183,10 +2183,10 @@ function focusDataLayerRow(layerId) {
   const row = document.querySelector(`#data-toggles [data-layer-id="${CSS.escape(layerId)}"]`);
   if (!row) return null;
   row.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  row.classList.remove('gev-voice-focus');
+  row.classList.remove('vtr-voice-focus');
   void row.offsetWidth;
-  row.classList.add('gev-voice-focus');
-  window.setTimeout(() => row.classList.remove('gev-voice-focus'), 3000);
+  row.classList.add('vtr-voice-focus');
+  window.setTimeout(() => row.classList.remove('vtr-voice-focus'), 3000);
   const name = row.querySelector('.data-name')?.textContent?.trim() || layerId;
   return { id: layerId, name };
 }
@@ -2639,7 +2639,7 @@ async function getBasemapContext(viewer, viewTarget = null) {
     );
     return {
       source: 'Google Photorealistic 3D Tiles / Cesium basemap',
-      hasGoogle3DTiles: Boolean(window.__godsEyeView?.tileset),
+      hasGoogle3DTiles: Boolean(window.__visonTR?.tileset),
       viewScale,
       viewportSamples: samples,
       viewportPlaces,
@@ -2675,7 +2675,7 @@ async function getBasemapContext(viewer, viewTarget = null) {
   const nearbyPlaces = resolvedNearbyPlaces || [];
   return {
     source: 'Google Photorealistic 3D Tiles / Cesium basemap',
-    hasGoogle3DTiles: Boolean(window.__godsEyeView?.tileset),
+    hasGoogle3DTiles: Boolean(window.__visonTR?.tileset),
     viewScale,
     viewportSamples: samples,
     viewportPlaces,
@@ -3141,7 +3141,7 @@ function approximateCoordinateDistanceSq(latA, lonA, latB, lonB) {
 function logSlowContext(startedAt, scope) {
   const durationMs = Math.round(performance.now() - startedAt);
   if (durationMs >= 500) {
-    console.info(`[GEV Voice] ${scope} scene context completed in ${durationMs}ms`);
+    console.info(`[VTR Voice] ${scope} scene context completed in ${durationMs}ms`);
   }
 }
 
@@ -3159,9 +3159,9 @@ function dominantValue(values) {
 
 function summarizeEntity(viewer, entity, { includeProperties = false } = {}) {
   const now = Cesium.JulianDate.now();
-  if (entity.__gevContextId) {
-    const store = window.__gevContextStore;
-    const record = store?.entities?.get(entity.__gevContextId);
+  if (entity.__vtrContextId) {
+    const store = window.__vtrContextStore;
+    const record = store?.entities?.get(entity.__vtrContextId);
     if (record) return summarizeContextRecord(record, { includeProperties });
   }
   const props = propertyObject(entity);

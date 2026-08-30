@@ -144,7 +144,7 @@ test('flights first update forwards caller cancellation into the feed request', 
 test('nonempty OpenSky payload with zero usable rows cannot prove share target absence', async () => {
   _setTrackedFlightRefreshStateForTest({
     icao24: 'abc123',
-    entity: { gevLabelModel: { title: 'WARM', details: [] } },
+    entity: { vtrLabelModel: { title: 'WARM', details: [] } },
     billboard: { show: false },
     billboardCollection: { show: true, remove() {} },
     viewer: { camera: { positionCartographic: null }, scene: {} },
@@ -170,7 +170,7 @@ test('nonempty OpenSky payload with zero usable rows cannot prove share target a
 
 test('flights poll refreshes tracked callsign/FL/kts and marks a missed poll STALE', async () => {
   const icao24 = 'a1b2c3';
-  const entity = { gevLabelModel: { title: 'OLD', details: [] } };
+  const entity = { vtrLabelModel: { title: 'OLD', details: [] } };
   const billboard = {
     position: Cesium.Cartesian3.fromDegrees(-97.7, 30.2, 9_000),
     color: Cesium.Color.WHITE,
@@ -223,13 +223,13 @@ test('flights poll refreshes tracked callsign/FL/kts and marks a missed poll STA
 
   try {
     await flightsLayer.update(viewer);
-    assert.equal(entity.gevLabelModel.title, 'DAL123');
-    assert.match(entity.gevLabelModel.details.join(' · '), /FL350/);
-    assert.match(entity.gevLabelModel.details.join(' · '), /486 kts/);
+    assert.equal(entity.vtrLabelModel.title, 'DAL123');
+    assert.match(entity.vtrLabelModel.details.join(' · '), /FL350/);
+    assert.match(entity.vtrLabelModel.details.join(' · '), /486 kts/);
 
     await flightsLayer.update(viewer);
     assert.match(
-      [entity.gevLabelModel.title, ...entity.gevLabelModel.details].join(' · '),
+      [entity.vtrLabelModel.title, ...entity.vtrLabelModel.details].join(' · '),
       /STALE/,
     );
   } finally {
@@ -297,7 +297,7 @@ test('real civil track path creates no native label and publishes every cached h
   const realFetch = globalThis.fetch;
   globalThis.window = new EventTarget();
   const selectionEvents = [];
-  globalThis.window.addEventListener('gev:awareness-subject-selected', (event) => {
+  globalThis.window.addEventListener('vtr:awareness-subject-selected', (event) => {
     selectionEvents.push(event.detail);
   });
   globalThis.fetch = async () => ({ ok: false });
@@ -345,7 +345,7 @@ test('real civil track path creates no native label and publishes every cached h
     assert.ok(entity instanceof Cesium.Entity, 'trackById must create the real Cesium entity');
     assert.equal(entity.label, undefined);
     assert.ok(entities.values.every((candidate) => candidate.label === undefined));
-    assert.deepEqual(entity.gevLabelModel, {
+    assert.deepEqual(entity.vtrLabelModel, {
       title: 'N12345 · FL350 · 486 kts',
       details: ['TEST AIR · A320', 'AUS → LAX'],
       accent: '#39d0ff',
@@ -356,7 +356,7 @@ test('real civil track path creates no native label and publishes every cached h
     assert.equal(flightsLayer.trackById(icao24, { origin: 'user' }), true);
     assert.equal(cancelledFlights, initialCancelledFlights, 'ordinary repeated tracking stays camera-idempotent');
     assert.equal(selectionEvents.at(-1)?.origin, 'user', 'same-target selection upgrades durable authority');
-    assert.equal(entity.gevSelectionOrigin, 'user');
+    assert.equal(entity.vtrSelectionOrigin, 'user');
     assert.equal(flightsLayer.refocusTrackedById('different-flight'), false);
     assert.equal(flightsLayer.refocusTrackedById(icao24, { origin: 'voice' }), true);
     assert.equal(selectionEvents.at(-1)?.origin, 'voice', 'same-target refocus forwards explicit authority');
@@ -370,8 +370,8 @@ test('real civil track path creates no native label and publishes every cached h
     const entry = publication.entries[0];
     assert.equal(entry.protected, true);
     assert.equal(entry.paintLane, 'tracked');
-    assert.equal(entry.title, entity.gevLabelModel.title);
-    assert.deepEqual(entry.details, entity.gevLabelModel.details);
+    assert.equal(entry.title, entity.vtrLabelModel.title);
+    assert.deepEqual(entry.details, entity.vtrLabelModel.details);
 
     const display = entity.position.getValue(now);
     assert.ok(display, 'tracked position callback must seed its frame cache');
@@ -589,7 +589,7 @@ test('civil label chain: identity stays icao24 while the label moves', () => {
 
 // The `labelsFor` sweep above reads only the RETURNED label surfaces. The
 // selection EVENT is a separate publication path (`_publishTrackedSelection`
-// → `gev:awareness-subject-selected`), consumed by Context/awareness, and it
+// → `vtr:awareness-subject-selected`), consumed by Context/awareness, and it
 // regressed to a raw `callsign || icao24` while every returned surface stayed
 // green. Observe the event itself so the chain cannot rot on that seam again.
 /** Capture the awareness selection event emitted for one seeded contact. */
@@ -598,7 +598,7 @@ function selectionEventFor({ callsign, registration }) {
   globalThis.window = new EventTarget();
   const events = [];
   globalThis.window.addEventListener(
-    'gev:awareness-subject-selected',
+    'vtr:awareness-subject-selected',
     (event) => events.push(event.detail),
   );
   try {
@@ -635,7 +635,7 @@ test('civil label chain: the awareness selection EVENT uses the canonical chain'
 });
 
 test('civil tracked readout: a callsign-less enriched contact reads as its registration', async () => {
-  const entity = { gevLabelModel: { title: 'OLD', details: [] } };
+  const entity = { vtrLabelModel: { title: 'OLD', details: [] } };
   seedLabelContact({ callsign: '  ', registration: ' N123AB ', tracked: true });
   _setTrackedFlightRefreshStateForTest({
     icao24: LABEL_ICAO,
@@ -665,9 +665,9 @@ test('civil tracked readout: a callsign-less enriched contact reads as its regis
   });
   try {
     await flightsLayer.update({ camera: { positionCartographic: null }, scene: {} });
-    assert.match(entity.gevLabelModel.title, /^N123AB\b/);
+    assert.match(entity.vtrLabelModel.title, /^N123AB\b/);
     assert.doesNotMatch(
-      [entity.gevLabelModel.title, ...entity.gevLabelModel.details].join(' · '),
+      [entity.vtrLabelModel.title, ...entity.vtrLabelModel.details].join(' · '),
       /ae1fa4/,
     );
   } finally {

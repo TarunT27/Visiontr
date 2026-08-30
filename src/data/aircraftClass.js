@@ -46,7 +46,7 @@ const LIGHT = new Set([
   'BE19', 'BE23', 'BE24', 'M20P', 'M20T', 'AA1', 'AA5', 'GLAS', 'COL4', 'RV4',
   'RV6', 'RV7', 'RV8', 'RV9', 'RV10', 'RV14', 'GA8', 'G115', 'BL8', 'CH7',
 ]);
-// GEV addition (2026-08-15 Hangar fleet): business jets — distinct class so the
+// VTR addition (2026-08-15 Hangar fleet): business jets — distinct class so the
 // Citation II GLB + a slimmer glyph read apart from airliners.
 const BIZJET = new Set([
   'C500', 'C501', 'C510', 'C525', 'C25A', 'C25B', 'C25C', 'C25M', 'C550',
@@ -59,12 +59,12 @@ const BIZJET = new Set([
   'PRM1', 'BE40', 'ASTR', 'WW24',
   'SF50', // Cirrus Vision Jet — a JET (was mis-set in LIGHT before the bizjet class existed)
 ]);
-// GEV addition (2026-08-15 Hangar fleet): large UAVs — ICAO designators seen on
+// VTR addition (2026-08-15 Hangar fleet): large UAVs — ICAO designators seen on
 // ADS-B/adsb.lol for Predator/Reaper/Global Hawk-class airframes.
 const UAV = new Set([
   'Q1', 'Q4', 'Q9', 'MQ1', 'MQ4', 'MQ9', 'RQ4', 'TB2', 'SHDW', 'HERN',
 ]);
-// GEV addition: fast jets, for the military layer's adsb.lol `t` codes.
+// VTR addition: fast jets, for the military layer's adsb.lol `t` codes.
 const FASTJET = new Set([
   'F16', 'F15', 'F18', 'FA18', 'F14', 'F22', 'F35', 'F4', 'F5', 'A10', 'AV8B',
   'TYPH', 'EUFI', 'RFAL', 'RAFL', 'GRIP', 'JAS39', 'TOR', 'MIR2', 'M2000',

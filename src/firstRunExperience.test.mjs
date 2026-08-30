@@ -648,8 +648,8 @@ test('the DISPLAY rail starts collapsed on a first run, and a stored choice wins
 
 test('the voice TOOL SCHEMA is byte-identical to main — the mission mapping is instructions only', () => {
   const src = fs.readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
-  const start = src.indexOf('const GEV_REALTIME_TOOLS = [');
-  assert.ok(start > 0, 'GEV_REALTIME_TOOLS must still be a single literal array');
+  const start = src.indexOf('const VTR_REALTIME_TOOLS = [');
+  assert.ok(start > 0, 'VTR_REALTIME_TOOLS must still be a single literal array');
   const end = src.indexOf('\n];\n', start);
   const block = src.slice(start, end + 4);
 
