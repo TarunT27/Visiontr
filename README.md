@@ -20,18 +20,6 @@ Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic,
 
 ---
 
-## 🌍 Why This Exists
-
-**You asked, so it's happening.** God's Eye View is open source. Track the world live. Talk to it. Break it. Extend it.
-
-Most open-source intelligence is a pile of browser tabs. The signals are abundant, but the *interface* is the bottleneck. God's Eye View turns those signals into a **place**: the world is already broadcasting — flight transponders, ship beacons, orbital elements, seismographs, public cameras — and this makes it visible on a photorealistic 3D Earth in real time. No classified clearance required; it's public signal all the way down, and the interface runs in your browser, under your control.
-
-> Half the magic is that it looks like a forbidden cockpit. The other half is that every line of code is inspectable.
-
-The live layers are grounded in public feeds: the airliner crossing your screen is reporting telemetry, the camera is installed at a published location, and the ISS position is propagated from current orbital elements. The client deliberately renders flights one polling interval behind real time so it can interpolate smoothly. Some experiences are modeled rather than live: keyless traffic is labeled as a simulation, camera poses are estimated until calibrated, and launch ascent playback is marked `RECONSTRUCTED ESTIMATE`. Each layer keeps its source and freshness state visible, including partial, delayed, simulated, and unavailable states.
-
----
-
 ## 🎛️ What This Thing Does
 
 - **🛩️ Cockpit view:** Ride inside a tracked flight — the camera holds the terrain under you all the way down.
