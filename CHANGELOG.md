@@ -10,8 +10,6 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 - Added honest aircraft identity narration: callsign, operator, registration,
   type, and route come only from selected-contact context, and missing operator,
   route, or type enrichment is named explicitly.
-- Added local, publication-compatible copies of the two README PNGs, with source
-  records and third-party-license boundaries in `docs/media/README.md`.
 - Added regression coverage for aircraft identity narration and optional-key
   loading feedback.
 
@@ -20,8 +18,6 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 - First-run presentation now opens with Detection `DENSE` at 75%, `ELASTIC`
   allocation, Fade 7%, Outside 1%, scope feather 11%, and aircraft 3D models in
   `PROXIMITY`. Stored state and share links still override these baselines.
-- The 17 selected README GIFs remain unchanged and are documented separately
-  from the two owner-published PNGs.
 - Bundled datacenter and dam snapshots now omit contact-oriented fields and
   note values containing email or phone identifiers. Feature geometry, names,
   operator/capacity/river metadata, counts, and ODbL terms are unchanged.
