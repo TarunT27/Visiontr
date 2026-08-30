@@ -217,7 +217,7 @@ VisonTR runs on **public data, clear sources, and local-first execution.** No se
 **Status:** An evolving open-source client for exploration and learning — a fast, hackable foundation, not a hardened production service. Released under the **[MIT License](LICENSE)**. Bundled and live datasets carry their own terms — see **[DATA_SOURCES.md](DATA_SOURCES.md)**. Security model: **[SECURITY.md](SECURITY.md)**. Want to contribute? **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 > [!IMPORTANT]
-> God's Eye View is an exploratory visualization of public and third-party data.
+> VisionTR is an exploratory visualization of public and third-party data.
 > Data may be delayed, incomplete, modeled, inferred, or wrong. Do not use it
 > for flight or maritime navigation, emergency response, medical or health
 > decisions, investment decisions, or other safety-critical or operational
