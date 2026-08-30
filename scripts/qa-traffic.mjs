@@ -77,16 +77,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /** Enable traffic + teleport, then poll the layer until settled. */
 async function settleTraffic(page, view, { minCount = 1, timeoutS = 30 } = {}) {
   return page.evaluate(async (v, minC, tS) => {
-    const gev = window.__godsEyeView;
-    const dm = gev.dataManager;
+    const vtr = window.__visonTR;
+    const dm = vtr.dataManager;
     await dm.setEnabled('traffic', true);
     const mod = dm.layers.get('traffic').module;
-    const ell = gev.viewer.scene.globe.ellipsoid;
+    const ell = vtr.viewer.scene.globe.ellipsoid;
     const d2r = Math.PI / 180;
     // The app's intro flyTo animation clobbers a setView issued mid-flight —
     // cancel any active tween before teleporting.
-    try { gev.viewer.camera.cancelFlight(); } catch { /* no flight active */ }
-    gev.viewer.camera.setView({
+    try { vtr.viewer.camera.cancelFlight(); } catch { /* no flight active */ }
+    vtr.viewer.camera.setView({
       destination: ell.cartographicToCartesian({ longitude: v.lon * d2r, latitude: v.lat * d2r, height: v.height }),
       orientation: { heading: (v.heading || 0) * d2r, pitch: (v.pitch ?? -90) * d2r, roll: 0 },
     });
@@ -149,7 +149,7 @@ async function main() {
     console.log('Loading app...');
     await page.goto(APP_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
-      () => window.__godsEyeView?.viewer && window.__godsEyeView?.dataManager,
+      () => window.__visonTR?.viewer && window.__visonTR?.dataManager,
       { timeout: 60000 },
     );
     await sleep(1500);
@@ -183,14 +183,14 @@ async function main() {
     console.log('\n(iv) uncoveredRoads param — hide vs sim...');
     if ((mumbai.flowBuckets?.sim || 0) > 0) {
       const hid = await page.evaluate(async () => {
-        const gev = window.__godsEyeView;
-        const mod = gev.dataManager.layers.get('traffic').module;
+        const vtr = window.__visonTR;
+        const mod = vtr.dataManager.layers.get('traffic').module;
         const before = mod.getStats().lastUpdate;
         mod.setParams({ uncoveredRoads: 'hide' });
-        const ell = gev.viewer.scene.globe.ellipsoid;
+        const ell = vtr.viewer.scene.globe.ellipsoid;
         const d2r = Math.PI / 180;
         // Shift far enough to defeat the overlap gate and force a re-render.
-        gev.viewer.camera.setView({
+        vtr.viewer.camera.setView({
           destination: ell.cartographicToCartesian({ longitude: -98.51 * d2r, latitude: 29.435 * d2r, height: 2800 }),
           orientation: { heading: 0.4, pitch: -1.25, roll: 0 },
         });
@@ -267,7 +267,7 @@ async function main() {
     });
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
-      () => window.__godsEyeView?.viewer && window.__godsEyeView?.dataManager,
+      () => window.__visonTR?.viewer && window.__visonTR?.dataManager,
       { timeout: 60000 },
     );
     await sleep(1500);

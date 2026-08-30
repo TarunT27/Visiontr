@@ -18,7 +18,7 @@ test('point (pin/highlight/label) round-trips, height preserved', () => {
   const f = annotationToFeature(pin);
   assert.equal(f.geometry.type, 'Point');
   assert.deepEqual(f.geometry.coordinates, [-77.9, 34.27, 12]);
-  assert.equal(f.properties['gev:type'], 'pin');
+  assert.equal(f.properties['vtr:type'], 'pin');
   assert.deepEqual(roundTrip(pin), pin);
 
   const hl = { type: 'highlight', id: 'anno-2', label: 'spot', color: 'amber', ttlMs: 30000,
@@ -36,8 +36,8 @@ test('area polygon round-trips: ring closed in GeoJSON, un-closed on import; cen
   const gjRing = f.geometry.coordinates[0];
   assert.equal(gjRing.length, 5); // 4 vertices + explicit closing point
   assert.deepEqual(gjRing[0], gjRing[gjRing.length - 1]); // closed
-  assert.deepEqual(f.properties['gev:anchor'], [-122.434, 37.804]);
-  assert.deepEqual(roundTrip(area), area); // ring back to 4, anchor from gev:anchor
+  assert.deepEqual(f.properties['vtr:anchor'], [-122.434, 37.804]);
+  assert.deepEqual(roundTrip(area), area); // ring back to 4, anchor from vtr:anchor
 });
 
 test('synthesized + building props are preserved', () => {
@@ -46,7 +46,7 @@ test('synthesized + building props are preserved', () => {
     ring: [[-97.75, 30.27], [-97.74, 30.28], [-97.73, 30.27]],
     footprintKind: 'area', buildingHeight: null, synthesized: true };
   const f = annotationToFeature(synth);
-  assert.equal(f.properties['gev:synthesized'], true);
+  assert.equal(f.properties['vtr:synthesized'], true);
   assert.equal(roundTrip(synth).synthesized, true);
 
   const bldg = { type: 'area', id: 'anno-5', label: 'Pentagon', color: 'primary', ttlMs: null,
@@ -104,11 +104,11 @@ test('malformed input fails CLOSED (returns null / skips)', () => {
   assert.equal(featureToAnnotation(null), null);
   assert.equal(featureToAnnotation({}), null);
   assert.equal(featureToAnnotation({ type: 'NotAFeature' }), null);
-  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: {} }), null); // no gev:type
-  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { 'gev:type': 'route' } }), null); // route needs LineString
-  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[0, 0], [1, 1], [2, 2]] }, properties: { 'gev:type': 'arrow' } }), null); // arrow needs exactly 2
-  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[0, 0], [1, 1]]] }, properties: { 'gev:type': 'area' } }), null); // <4 positions
-  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Point', coordinates: ['x', 0] }, properties: { 'gev:type': 'pin' } }), null); // non-finite
+  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: {} }), null); // no vtr:type
+  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { 'vtr:type': 'route' } }), null); // route needs LineString
+  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[0, 0], [1, 1], [2, 2]] }, properties: { 'vtr:type': 'arrow' } }), null); // arrow needs exactly 2
+  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[0, 0], [1, 1]]] }, properties: { 'vtr:type': 'area' } }), null); // <4 positions
+  assert.equal(featureToAnnotation({ type: 'Feature', geometry: { type: 'Point', coordinates: ['x', 0] }, properties: { 'vtr:type': 'pin' } }), null); // non-finite
   // unknown type on the annotation side too
   assert.equal(annotationToFeature({ type: 'blob', anchor: { lon: 0, lat: 0 } }), null);
   assert.equal(annotationToFeature(null), null);

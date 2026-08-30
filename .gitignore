@@ -5,8 +5,8 @@ dist
 screenshots/
 qa-shots/
 output/
-.gev-logs/
-.gev-cache/
+.vtr-logs/
+.vtr-cache/
 .DS_Store
 .gstack/
 3d-models/

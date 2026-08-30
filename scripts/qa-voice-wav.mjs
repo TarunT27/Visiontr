@@ -58,20 +58,20 @@ try {
 
   await page.goto(appUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
   await page.waitForFunction(() => (
-    window.__godsEyeView?.voiceCommands
-    && document.getElementById('gev-voice-button')
+    window.__visonTR?.voiceCommands
+    && document.getElementById('vtr-voice-button')
   ), { timeout: 30_000 });
 
   const readState = () => page.evaluate(() => {
-    const voice = window.__godsEyeView?.voiceCommands;
-    const radio = window.__godsEyeView?.dataManager?.layers?.get('radio')?.module;
+    const voice = window.__visonTR?.voiceCommands;
+    const radio = window.__visonTR?.dataManager?.layers?.get('radio')?.module;
     const radioState = radio?.getUIState?.() || null;
-    const camera = window.__godsEyeView?.viewer?.camera;
+    const camera = window.__visonTR?.viewer?.camera;
     const cartographic = camera?.positionCartographic;
     return {
       at: Date.now(),
       voiceStatus: voice?.status || null,
-      voiceDetail: document.getElementById('gev-voice-detail')?.textContent?.trim() || null,
+      voiceDetail: document.getElementById('vtr-voice-detail')?.textContent?.trim() || null,
       cameraHeightM: cartographic?.height ?? null,
       radioEnabled: radioState?.enabled ?? null,
       radioAudioState: radioState?.audioState ?? null,
@@ -81,7 +81,7 @@ try {
   });
 
   const initial = await readState();
-  await page.evaluate(() => document.getElementById('gev-voice-button').click());
+  await page.evaluate(() => document.getElementById('vtr-voice-button').click());
 
   const timeline = [initial];
   let lastSignature = JSON.stringify(initial);

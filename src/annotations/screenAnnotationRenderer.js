@@ -132,28 +132,28 @@ export function createScreenAnnotationRenderer(viewer, {
 
   function add(anno) {
     const c = color(anno);
-    const group = svgEl('g', { class: 'gev-anno', opacity: '0' });
+    const group = svgEl('g', { class: 'vtr-anno', opacity: '0' });
     const parts = {};
 
     if (anno.type === 'area' && anno.ring && anno.ring.length >= 3) {
       // Synthesized (buffered/approximate) areas render DASHED + fainter, with no
       // "draw-on" gesture, so they never masquerade as an authoritative boundary.
       parts.poly = svgEl('polygon', {
-        class: anno.synthesized ? 'gev-anno-area' : 'gev-anno-area gev-draw',
+        class: anno.synthesized ? 'vtr-anno-area' : 'vtr-anno-area vtr-draw',
         fill: c, stroke: c,
         'fill-opacity': anno.synthesized ? '0.08' : '0.14',
         'stroke-width': '2.5',
         ...(anno.synthesized ? { 'stroke-dasharray': '9 7' } : {}),
-        filter: 'url(#gev-sketch)',
+        filter: 'url(#vtr-sketch)',
       });
       group.appendChild(parts.poly);
       parts.label = makeCallout(anno.label, c);
       if (parts.label) group.appendChild(parts.label.node);
     } else if (anno.type === 'arrow' && anno.to) {
       parts.path = svgEl('path', {
-        class: 'gev-anno-arrow gev-draw', fill: 'none', stroke: c,
-        'stroke-width': '3', 'marker-end': `url(#gev-arrow-${anno.color || 'primary'})`,
-        filter: 'url(#gev-sketch)',
+        class: 'vtr-anno-arrow vtr-draw', fill: 'none', stroke: c,
+        'stroke-width': '3', 'marker-end': `url(#vtr-arrow-${anno.color || 'primary'})`,
+        filter: 'url(#vtr-sketch)',
       });
       ensureArrowMarker(defs, anno.color || 'primary', c);
       group.appendChild(parts.path);
@@ -162,14 +162,14 @@ export function createScreenAnnotationRenderer(viewer, {
     } else if (anno.type === 'route' && Array.isArray(anno.path) && anno.path.length >= 2) {
       // Multi-waypoint path: a drawn-on polyline with a dot at each waypoint.
       parts.poly = svgEl('polyline', {
-        class: 'gev-anno-arrow gev-draw', fill: 'none', stroke: c,
-        'stroke-width': '3', 'marker-end': `url(#gev-arrow-${anno.color || 'primary'})`,
-        filter: 'url(#gev-sketch)',
+        class: 'vtr-anno-arrow vtr-draw', fill: 'none', stroke: c,
+        'stroke-width': '3', 'marker-end': `url(#vtr-arrow-${anno.color || 'primary'})`,
+        filter: 'url(#vtr-sketch)',
       });
       ensureArrowMarker(defs, anno.color || 'primary', c);
       group.appendChild(parts.poly);
       parts.dots = anno.path.map(() => {
-        const dot = svgEl('circle', { class: 'gev-anno-dot', fill: c, stroke: '#06121c', 'stroke-width': '2', r: '4' });
+        const dot = svgEl('circle', { class: 'vtr-anno-dot', fill: c, stroke: '#06121c', 'stroke-width': '2', r: '4' });
         group.appendChild(dot);
         return dot;
       });
@@ -178,14 +178,14 @@ export function createScreenAnnotationRenderer(viewer, {
     } else {
       // pin / highlight / label — pulsing target rings + a marker dot + callout
       if (anno.type !== 'label') {
-        parts.ringOuter = svgEl('circle', { class: 'gev-anno-ring gev-pulse', fill: 'none', stroke: c, 'stroke-width': '2', r: '34' });
-        parts.ringInner = svgEl('circle', { class: 'gev-anno-ring', fill: c, 'fill-opacity': '0.12', stroke: c, 'stroke-width': '2.5', r: '18', filter: 'url(#gev-sketch)' });
+        parts.ringOuter = svgEl('circle', { class: 'vtr-anno-ring vtr-pulse', fill: 'none', stroke: c, 'stroke-width': '2', r: '34' });
+        parts.ringInner = svgEl('circle', { class: 'vtr-anno-ring', fill: c, 'fill-opacity': '0.12', stroke: c, 'stroke-width': '2.5', r: '18', filter: 'url(#vtr-sketch)' });
         group.appendChild(parts.ringOuter);
         group.appendChild(parts.ringInner);
       }
-      parts.dot = svgEl('circle', { class: 'gev-anno-dot', fill: c, stroke: '#06121c', 'stroke-width': '2', r: anno.type === 'label' ? '4' : '5' });
+      parts.dot = svgEl('circle', { class: 'vtr-anno-dot', fill: c, stroke: '#06121c', 'stroke-width': '2', r: anno.type === 'label' ? '4' : '5' });
       group.appendChild(parts.dot);
-      parts.leader = svgEl('line', { class: 'gev-anno-leader', stroke: c, 'stroke-width': '1.5', 'stroke-opacity': '0.7' });
+      parts.leader = svgEl('line', { class: 'vtr-anno-leader', stroke: c, 'stroke-width': '1.5', 'stroke-opacity': '0.7' });
       group.appendChild(parts.leader);
       parts.label = makeCallout(anno.label, c);
       if (parts.label) group.appendChild(parts.label.node);
@@ -200,7 +200,7 @@ export function createScreenAnnotationRenderer(viewer, {
     try {
       svg.appendChild(group);
       // trigger draw-on / fade-in on the next frame
-      requestAnimationFrame(() => group.classList.add('gev-in'));
+      requestAnimationFrame(() => group.classList.add('vtr-in'));
       // The draw-on effect uses a fixed stroke-dasharray of 1400 (see CSS). Any
       // stroke longer than 1400px (a long arrow/route on a wide window) would keep
       // a permanent dash gap — the arrowhead detaches from the truncated line (H6).
@@ -208,7 +208,7 @@ export function createScreenAnnotationRenderer(viewer, {
       // drawn, so drop the dasharray entirely then and the stroke reads solid at
       // any length. Guarded on the specific property so an unrelated transition
       // (none here, but defensive) doesn't clear it early.
-      for (const drawEl of group.querySelectorAll('.gev-draw')) {
+      for (const drawEl of group.querySelectorAll('.vtr-draw')) {
         drawEl.addEventListener('transitionend', (e) => {
           if (e.propertyName === 'stroke-dashoffset') {
             drawEl.style.strokeDasharray = 'none';
@@ -317,8 +317,8 @@ export function createScreenAnnotationRenderer(viewer, {
 
     const ent = viewer.trackedEntity;
     const now = Cesium.JulianDate.now();
-    const world = typeof ent?.gevDisplayPosition === 'function'
-      ? ent.gevDisplayPosition()
+    const world = typeof ent?.vtrDisplayPosition === 'function'
+      ? ent.vtrDisplayPosition()
       : null;
     const win = world
       ? Cesium.SceneTransforms.worldToWindowCoordinates(scene, world, _scratchTrackedWin)
@@ -487,7 +487,7 @@ export function createScreenAnnotationRenderer(viewer, {
       const next = cur + (target - cur) * TRACKED_FADE_EASE;
       rec._trackedFade = Math.abs(next - target) < 0.02 ? target : next;
       // Only override when faded — otherwise leave the base alpha (set above) intact.
-      // (The CSS `transition: opacity` was removed from .gev-anno so this per-frame JS ease
+      // (The CSS `transition: opacity` was removed from .vtr-anno so this per-frame JS ease
       // is the ONLY easing — previously the two fought and produced an opacity oscillation.)
       if (rec._trackedFade !== 1) {
         group.setAttribute('opacity', String((anno.alpha ?? 1) * rec._trackedFade));
@@ -498,8 +498,8 @@ export function createScreenAnnotationRenderer(viewer, {
   function remove(anno) {
     const rec = records.get(anno.id);
     if (!rec) return;
-    rec.group.classList.remove('gev-in');
-    rec.group.classList.add('gev-out');
+    rec.group.classList.remove('vtr-in');
+    rec.group.classList.add('vtr-out');
     const node = rec.group;
     window.setTimeout(() => { try { node.remove(); } catch { /* gone */ } }, 360);
     records.delete(anno.id);
@@ -526,14 +526,14 @@ export function createScreenAnnotationRenderer(viewer, {
 
 function buildOverlay() {
   const layer = document.createElement('div');
-  layer.className = 'gev-screen-whiteboard';
+  layer.className = 'vtr-screen-whiteboard';
   const svg = document.createElementNS(SVGNS, 'svg');
-  svg.setAttribute('class', 'gev-screen-whiteboard-svg');
+  svg.setAttribute('class', 'vtr-screen-whiteboard-svg');
   svg.setAttribute('preserveAspectRatio', 'none');
   const defs = document.createElementNS(SVGNS, 'defs');
   // subtle hand-drawn wobble for strokes
   defs.innerHTML = `
-    <filter id="gev-sketch" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="vtr-sketch" x="-20%" y="-20%" width="140%" height="140%">
       <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="7" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
     </filter>`;
@@ -545,17 +545,17 @@ function buildOverlay() {
 function makeCallout(text, c) {
   if (!text) return null;
   const node = document.createElementNS(SVGNS, 'g');
-  node.setAttribute('class', 'gev-anno-callout');
+  node.setAttribute('class', 'vtr-anno-callout');
   const rect = document.createElementNS(SVGNS, 'rect');
   rect.setAttribute('rx', '5');
-  rect.setAttribute('class', 'gev-anno-card');
+  rect.setAttribute('class', 'vtr-anno-card');
   const t = document.createElementNS(SVGNS, 'text');
-  t.setAttribute('class', 'gev-anno-text');
+  t.setAttribute('class', 'vtr-anno-text');
   t.setAttribute('x', '9');
   t.setAttribute('y', '16');
   t.textContent = text;
   const accent = document.createElementNS(SVGNS, 'rect');
-  accent.setAttribute('class', 'gev-anno-accent');
+  accent.setAttribute('class', 'vtr-anno-accent');
   accent.setAttribute('width', '3');
   accent.setAttribute('rx', '1.5');
   accent.setAttribute('fill', c);
@@ -618,9 +618,9 @@ function decollideCallouts(callouts) {
 }
 
 function ensureArrowMarker(defs, key, c) {
-  if (defs.querySelector(`#gev-arrow-${key}`)) return;
+  if (defs.querySelector(`#vtr-arrow-${key}`)) return;
   const marker = document.createElementNS(SVGNS, 'marker');
-  marker.setAttribute('id', `gev-arrow-${key}`);
+  marker.setAttribute('id', `vtr-arrow-${key}`);
   marker.setAttribute('viewBox', '0 0 10 10');
   marker.setAttribute('refX', '8');
   marker.setAttribute('refY', '5');
@@ -641,34 +641,34 @@ function svgEl(tag, attrs) {
 }
 
 function injectStyles() {
-  if (document.getElementById('gev-screen-whiteboard-styles')) return;
+  if (document.getElementById('vtr-screen-whiteboard-styles')) return;
   const style = document.createElement('style');
-  style.id = 'gev-screen-whiteboard-styles';
+  style.id = 'vtr-screen-whiteboard-styles';
   style.textContent = `
-  .gev-screen-whiteboard { position: fixed; inset: 0; pointer-events: none; z-index: 90; }
-  .gev-screen-whiteboard-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .vtr-screen-whiteboard { position: fixed; inset: 0; pointer-events: none; z-index: 90; }
+  .vtr-screen-whiteboard-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   /* No CSS opacity transition here on purpose: group opacity is driven per-frame in JS
      (the 260ms fade-in via computeAlpha, and the tracked-entity z-order ease). A CSS
      transition fought those per-frame writes and made the tracked-fade opacity oscillate
-     (flicker). Fade-OUT keeps its own transition via .gev-anno.gev-out below. */
-  .gev-anno-ring { filter: drop-shadow(0 0 6px currentColor); }
-  .gev-anno-dot { filter: drop-shadow(0 0 5px rgba(255,255,255,0.6)); }
-  .gev-anno-area { filter: drop-shadow(0 0 5px currentColor); }
-  .gev-anno-arrow { filter: drop-shadow(0 0 4px currentColor); stroke-linecap: round; }
-  .gev-anno-leader { stroke-dasharray: 2 3; }
-  .gev-anno-card { fill: rgba(8,18,28,0.78); stroke: rgba(255,255,255,0.14); stroke-width: 1; }
-  .gev-anno-text { fill: #eaf6ff; font: 600 13px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.02em; }
+     (flicker). Fade-OUT keeps its own transition via .vtr-anno.vtr-out below. */
+  .vtr-anno-ring { filter: drop-shadow(0 0 6px currentColor); }
+  .vtr-anno-dot { filter: drop-shadow(0 0 5px rgba(255,255,255,0.6)); }
+  .vtr-anno-area { filter: drop-shadow(0 0 5px currentColor); }
+  .vtr-anno-arrow { filter: drop-shadow(0 0 4px currentColor); stroke-linecap: round; }
+  .vtr-anno-leader { stroke-dasharray: 2 3; }
+  .vtr-anno-card { fill: rgba(8,18,28,0.78); stroke: rgba(255,255,255,0.14); stroke-width: 1; }
+  .vtr-anno-text { fill: #eaf6ff; font: 600 13px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.02em; }
   /* draw-on: outlined shapes reveal their stroke */
-  .gev-draw { stroke-dasharray: 1400; stroke-dashoffset: 1400; }
-  .gev-anno.gev-in .gev-draw { transition: stroke-dashoffset 900ms ease-out; stroke-dashoffset: 0; }
+  .vtr-draw { stroke-dasharray: 1400; stroke-dashoffset: 1400; }
+  .vtr-anno.vtr-in .vtr-draw { transition: stroke-dashoffset 900ms ease-out; stroke-dashoffset: 0; }
   /* opacity-only fade-in: a CSS transform here would override the SVG transform
      attribute used to POSITION the callout and snap it to 0,0. */
-  .gev-anno-callout { opacity: 0; }
-  .gev-anno.gev-in .gev-anno-callout { animation: gev-pop 320ms ease-out both; }
-  .gev-anno.gev-out { opacity: 0 !important; transition: opacity 320ms ease; }
-  .gev-pulse { animation: gev-ring-pulse 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-  @keyframes gev-ring-pulse { 0%,100% { opacity: 0.9; stroke-width: 2; } 50% { opacity: 0.35; stroke-width: 3.5; } }
-  @keyframes gev-pop { from { opacity: 0; } to { opacity: 1; } }
+  .vtr-anno-callout { opacity: 0; }
+  .vtr-anno.vtr-in .vtr-anno-callout { animation: vtr-pop 320ms ease-out both; }
+  .vtr-anno.vtr-out { opacity: 0 !important; transition: opacity 320ms ease; }
+  .vtr-pulse { animation: vtr-ring-pulse 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes vtr-ring-pulse { 0%,100% { opacity: 0.9; stroke-width: 2; } 50% { opacity: 0.35; stroke-width: 3.5; } }
+  @keyframes vtr-pop { from { opacity: 0; } to { opacity: 1; } }
   `;
   document.head.appendChild(style);
 }

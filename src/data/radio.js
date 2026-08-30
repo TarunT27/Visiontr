@@ -3,7 +3,7 @@
  *
  * Radio Browser supplies public-domain directory metadata through the local
  * `/api/radio/*` broker. Audio always travels directly from the broadcaster
- * to one active HTMLAudioElement after an explicit user action; GEV does not
+ * to one active HTMLAudioElement after an explicit user action; VTR does not
  * proxy, cache, record, or redistribute streams.
  *
  * @module radio
@@ -2563,7 +2563,7 @@ function installInteraction() {
     _playFallbackFocus = null;
     selectRadioStation(stationId, { autoplay: true, origin: 'user' });
     if (typeof document !== 'undefined') {
-      document.dispatchEvent(new CustomEvent('gev:radio-selected', { detail: { stationId } }));
+      document.dispatchEvent(new CustomEvent('vtr:radio-selected', { detail: { stationId } }));
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   // Polling remains bounded during flights, but a stationary camera no longer

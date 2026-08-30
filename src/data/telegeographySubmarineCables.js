@@ -231,7 +231,7 @@ export function cableClassificationTypeForStack(activeId) {
 
 /**
  * Derive the active surface from live scene state. The boot-time
- * `setStack(..., { silent: true })` fires no 'gev:map-stack-changed' event,
+ * `setStack(..., { silent: true })` fires no 'vtr:map-stack-changed' event,
  * so the initial classification reads the scene the way the height-datum
  * listeners do: the photoreal regime is exactly "globe hidden".
  * @param {Cesium.Scene|null|undefined} scene
@@ -711,7 +711,7 @@ export function createTeleGeographySubmarineCableLayer({
   }
 
   function registerPickEntity(entity, info) {
-    entity.__gevTeleGeography = info;
+    entity.__vtrTeleGeography = info;
     _pickByEntity.set(entity, info);
   }
 
@@ -819,7 +819,7 @@ export function createTeleGeographySubmarineCableLayer({
       },
     });
 
-    entity.__gevTeleGeography = info;
+    entity.__vtrTeleGeography = info;
     _pickByEntity.set(entity, info);
     const record = {
       id: entity.id,
@@ -912,7 +912,7 @@ export function createTeleGeographySubmarineCableLayer({
     if (primitive) {
       const primitiveInfo = _pickByEntity.get(primitive);
       if (primitiveInfo) return primitiveInfo;
-      if (primitive.__gevTeleGeography) return primitive.__gevTeleGeography;
+      if (primitive.__vtrTeleGeography) return primitive.__vtrTeleGeography;
       if (primitive.id && typeof primitive.id === 'object' && primitive.id.reference) {
         return primitive.id;
       }
@@ -922,7 +922,7 @@ export function createTeleGeographySubmarineCableLayer({
     if (entity) {
       const entityInfo = _pickByEntity.get(entity);
       if (entityInfo) return entityInfo;
-      if (entity.__gevTeleGeography) return entity.__gevTeleGeography;
+      if (entity.__vtrTeleGeography) return entity.__vtrTeleGeography;
       if (entity.id && typeof entity.id === 'object' && entity.id.reference) {
         return entity.id;
       }
@@ -1052,7 +1052,7 @@ export function createTeleGeographySubmarineCableLayer({
             ? cableClassificationTypeForStack(event.detail.activeId)
             : cableClassificationTypeForScene(_viewer?.scene));
         };
-        mapStackEventTarget.addEventListener('gev:map-stack-changed', _mapStackListener);
+        mapStackEventTarget.addEventListener('vtr:map-stack-changed', _mapStackListener);
       }
       beginInteraction(viewer);
       if (!_preRenderRemover) {
@@ -1129,7 +1129,7 @@ export function createTeleGeographySubmarineCableLayer({
         _moveEndRemover = null;
       }
       if (_mapStackListener && mapStackEventTarget?.removeEventListener) {
-        mapStackEventTarget.removeEventListener('gev:map-stack-changed', _mapStackListener);
+        mapStackEventTarget.removeEventListener('vtr:map-stack-changed', _mapStackListener);
         _mapStackListener = null;
       }
       _viewer = null;

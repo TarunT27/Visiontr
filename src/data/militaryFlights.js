@@ -318,8 +318,8 @@ function _publishTrackedSelection(icao24, origin = 'programmatic') {
   const bb = _billboards.get(icao24);
   const info = _flightData.get(icao24);
   if (!bb?.position || !info) return false;
-  if (_trackedEntity) _trackedEntity.gevSelectionOrigin = origin;
-  _emitAwarenessEvent('gev:awareness-subject-selected', {
+  if (_trackedEntity) _trackedEntity.vtrSelectionOrigin = origin;
+  _emitAwarenessEvent('vtr:awareness-subject-selected', {
     layerId: 'military',
     id: icao24,
     label: _toCleanText(info.callsign) || _toCleanText(info.registration) || icao24,
@@ -416,7 +416,7 @@ function _applyFleetBillboardPresentation(icao24, bb) {
   }
 
   const meta = _flightData.get(icao24);
-  bb.image = aircraftIcon(_iconKind(icao24, meta?.klass), bb._gevIconLarge ? TRACKED_ICON_PX : undefined);
+  bb.image = aircraftIcon(_iconKind(icao24, meta?.klass), bb._vtrIconLarge ? TRACKED_ICON_PX : undefined);
   bb.width = icao24 === _trackedIcao ? 24 : 20;
   bb.height = icao24 === _trackedIcao ? 24 : 20;
   bb.scale = _militaryBillboardScale(icao24) * limbScale;
@@ -722,7 +722,7 @@ function _buildTrackedLabel(info, icao24) {
 /** Write the explicit tracked presentation model and refresh its host entry. */
 function _updateTrackedLabelModel(icao24) {
   if (!_trackedEntity || icao24 !== _trackedIcao) return;
-  _trackedEntity.gevLabelModel = trackedLabelModelFromText(
+  _trackedEntity.vtrLabelModel = trackedLabelModelFromText(
     _buildTrackedLabel(_flightData.get(icao24), icao24),
     '#ffd166',
   );
@@ -1176,7 +1176,7 @@ const _scratchTrailHead = new Cesium.Cartesian3();
  * model is actually rendering with when the model owns the visual, otherwise the cached
  * dead-reckoned position. Mirror of flights.js; see that copy for the full rationale.
  * Reads the modelMatrix the tracked-model update already wrote this frame: no sampling,
- * no `_modelDisplayPosition` from postRender, and `gevDisplayPosition` keeps its
+ * no `_modelDisplayPosition` from postRender, and `vtrDisplayPosition` keeps its
  * follow-camera anti-jitter contract untouched.
  */
 function _trackedVisualCached() {
@@ -1525,12 +1525,12 @@ const _specKeyFor = (klass) => {
 function _syncModelToClass(icao24) {
   const key = _specKeyFor(_flightData.get(icao24)?.klass);
   const current = _models.get(icao24);
-  if ((current && current._gevSpecKey !== key) || (!current && _modelPending.has(icao24))) {
+  if ((current && current._vtrSpecKey !== key) || (!current && _modelPending.has(icao24))) {
     const bb = _billboards.get(icao24);
     if (bb && icao24 !== _trackedIcao) bb.show = true;
     _releaseModel(icao24);
   }
-  if (icao24 === _trackedIcao && _trackedModel && _trackedModel._gevSpecKey !== key) {
+  if (icao24 === _trackedIcao && _trackedModel && _trackedModel._vtrSpecKey !== key) {
     _releaseTrackedModel();
   }
 }
@@ -1564,7 +1564,7 @@ function _drainIrReloadQueue() {
   const batch = _irReloadQueue.splice(0, IR_RELOAD_BATCH);
   for (const icao of batch) {
     const model = _models.get(icao);
-    if (!model || model._gevIrBoost === _irBoost) continue; // already right state
+    if (!model || model._vtrIrBoost === _irBoost) continue; // already right state
     const bb = _billboards.get(icao);
     if (bb && icao !== _trackedIcao) bb.show = true;
     _releaseModel(icao);
@@ -1635,8 +1635,8 @@ async function _ensureModel(icao24) {
   // Keep the pick identity explicit on the resolved primitive. This also
   // protects injected/custom loaders that do not copy the creation option.
   model.id = icao24;
-  model._gevSpecKey = specKey; // class-change sync compares against this
-  model._gevIrBoost = loadIrBoost; // boost-flip reload queue compares against this
+  model._vtrSpecKey = specKey; // class-change sync compares against this
+  model._vtrIrBoost = loadIrBoost; // boost-flip reload queue compares against this
   // Admitted, not yet the visual. Cesium's default is show=true, which would let
   // an unplaced primitive claim ownership from the billboard for the frames
   // between admission and the next fleet tick (and draw at the identity matrix,
@@ -1738,7 +1738,7 @@ function _updateTrackedModel() {
       // Assign after resolution as well as in the creation options so the
       // standalone primitive always exposes the tracked aircraft pick id.
       m.id = _trackedIcao;
-      m._gevSpecKey = trackedKey; // class-change sync compares against this
+      m._vtrSpecKey = trackedKey; // class-change sync compares against this
       m.show = false; // admitted, not yet the visual — the driver shows it once placed
       // Seed the world transform before the primitive enters the scene. A model
       // can become ready+shown between render phases; leaving Cesium's identity
@@ -1945,9 +1945,9 @@ function _fleetTick() {
     if (!_cockpitContactMode || isCockpitNear) {
       const glyphDevPx = (bb.width || 20) * (bb.scale || 1)
         * distanceScale * (globalThis.devicePixelRatio || 1);
-      const wantLarge = bb._gevIconLarge ? glyphDevPx > 56 : glyphDevPx > 76;
-      if (wantLarge !== !!bb._gevIconLarge) {
-        bb._gevIconLarge = wantLarge;
+      const wantLarge = bb._vtrIconLarge ? glyphDevPx > 56 : glyphDevPx > 76;
+      if (wantLarge !== !!bb._vtrIconLarge) {
+        bb._vtrIconLarge = wantLarge;
         bb.image = aircraftIcon(_iconKind(icao24, _flightData.get(icao24)?.klass), wantLarge ? TRACKED_ICON_PX : undefined);
       }
     }
@@ -2131,9 +2131,9 @@ function _startTrail(icao24) {
   // to the 12 Hz icon instead of lagging ~1 s behind it.
   if (!_trailHeadEntity && _viewer) {
     _trailHeadEntity = _viewer.entities.add({
-      // 'gev-trail' namespace (round 6): claimed by trailRenderer's pick
+      // 'vtr-trail' namespace (round 6): claimed by trailRenderer's pick
       // owner so a click on the head segment never reads as empty space.
-      id: `gev-trail:mil-head-${++_trailHeadSeq}`,
+      id: `vtr-trail:mil-head-${++_trailHeadSeq}`,
       show: !_cockpitContactMode,
       polyline: {
         positions: new Cesium.CallbackProperty(() => {
@@ -2369,7 +2369,7 @@ function _clearTracking(skipViewerUntrack = false, {
   _trackedIcao = null;
   _applyFleetBillboardPresentation(clearedIcao, _billboards.get(clearedIcao));
   clearTrackedSubjectContext('military');
-  _emitAwarenessEvent('gev:awareness-subject-cleared', {
+  _emitAwarenessEvent('vtr:awareness-subject-cleared', {
     layerId: 'military',
     id: clearedIcao,
     origin,
@@ -2502,9 +2502,9 @@ function _trackFlight(icao24, { origin = 'programmatic' } = {}) {
       }, false),
     },
   });
-  _trackedEntity.gevSelectionOrigin = origin;
-  _trackedEntity.gevTrackedId = `military:${icao24}`;
-  _trackedEntity.gevLabelModel = trackedLabelModelFromText(
+  _trackedEntity.vtrSelectionOrigin = origin;
+  _trackedEntity.vtrTrackedId = `military:${icao24}`;
+  _trackedEntity.vtrLabelModel = trackedLabelModelFromText(
     _buildTrackedLabel(info, icao24),
     '#ffd166',
   );
@@ -2522,11 +2522,11 @@ function _trackFlight(icao24, { origin = 'programmatic' } = {}) {
   // mid-fly_to_location) would follow the plane WITHOUT centering it like a click does.
   // Cross-module HUD consumers (tracked-target readout) read the camera's settled position, not a
   // postRender recompute, so the label doesn't jitter against the now-stable plane (mirror of flights).
-  _trackedEntity.gevDisplayPosition = _trackedDisplayCached;
-  // Separate accessor on purpose (mirror of flights.js): `gevDisplayPosition` keeps the
+  _trackedEntity.vtrDisplayPosition = _trackedDisplayCached;
+  // Separate accessor on purpose (mirror of flights.js): `vtrDisplayPosition` keeps the
   // follow-camera anti-jitter contract; presentation that must weld to the aircraft you
-  // can see reads `gevVisualPosition`.
-  _trackedEntity.gevVisualPosition = _trackedVisualCached;
+  // can see reads `vtrVisualPosition`.
+  _trackedEntity.vtrVisualPosition = _trackedVisualCached;
   refreshTrackedReadout(_trackedEntity);
   _viewer.camera.cancelFlight();
   // Camera follows the tracked entity
@@ -2652,7 +2652,7 @@ const militaryFlightsLayer = {
     _cockpitNearContacts = new Set();
     if (!_cockpitModeListener) {
       _cockpitModeListener = (event) => _applyCockpitState(event?.detail);
-      window.addEventListener('gev:cockpit-mode-changed', _cockpitModeListener);
+      window.addEventListener('vtr:cockpit-mode-changed', _cockpitModeListener);
     }
 
     _installClickHandler(viewer);
@@ -3259,7 +3259,7 @@ const militaryFlightsLayer = {
     }
     document.removeEventListener('keydown', _onKeyDown);
     if (_cockpitModeListener) {
-      window.removeEventListener('gev:cockpit-mode-changed', _cockpitModeListener);
+      window.removeEventListener('vtr:cockpit-mode-changed', _cockpitModeListener);
       _cockpitModeListener = null;
     }
     unregisterPickOwner('military');
@@ -3803,7 +3803,7 @@ function _installClickHandler(viewer) {
     _trackedEntityChangedRemove = viewer.trackedEntityChanged.addEventListener(() => {
       if (_trackedIcao && _viewer && _viewer.trackedEntity && _viewer.trackedEntity !== _trackedEntity) {
         _clearTracking(true, {
-          origin: _viewer.trackedEntity?.gevSelectionOrigin || 'programmatic',
+          origin: _viewer.trackedEntity?.vtrSelectionOrigin || 'programmatic',
         });
       }
     });

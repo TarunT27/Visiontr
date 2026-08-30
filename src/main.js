@@ -18,7 +18,7 @@ import localDataLayers from './data/localLayers.js';
 import { LAYER_STATE_REGISTRY } from './data/layerState.js';
 import { registerDataCredits } from './data/dataCredits.js';
 import { SceneDirector } from './scenes/director.js';
-import { initGevVoiceCommands } from './voice/gevRealtime.js';
+import { initVtrVoiceCommands } from './voice/vtrRealtime.js';
 import { MapStackController } from './mapStackController.js';
 import { initAnnotations } from './annotations/index.js';
 import { initLogoGaze } from './logoGaze.js';
@@ -62,7 +62,7 @@ function describeError(error) {
 }
 
 /**
- * GOD'S EYE VIEW — Main Entry Point
+ * VISONTR — Main Entry Point
  * Initializes CesiumJS with Google Photorealistic 3D Tiles,
  * style system, intelligence HUD, location presets, and share links.
  */
@@ -184,7 +184,7 @@ async function init() {
       // 'switching'/'ready'/'error'; listeners derive the surface regime from
       // live scene state, so intermediate emissions are harmless.
       onChange: (state) => {
-        window.dispatchEvent(new CustomEvent('gev:map-stack-changed', { detail: state }));
+        window.dispatchEvent(new CustomEvent('vtr:map-stack-changed', { detail: state }));
       },
       onError: (message) => console.warn('[MapStack]', message),
     });
@@ -230,11 +230,11 @@ async function init() {
     // Restoration starts only after the complete production registry is sealed.
     dataManager.finalizeRegistrations(LAYER_STATE_REGISTRY);
     if (import.meta.env.DEV) {
-      window.__gevQaRegisterLayer = (targetManager, layerModule) => {
+      window.__vtrQaRegisterLayer = (targetManager, layerModule) => {
         if (targetManager !== dataManager) throw new Error('QA layer manager mismatch');
         return dataManager.registerForQa(layerModule);
       };
-      window.__gevQaUnregisterLayer = (targetManager, layerId) => {
+      window.__vtrQaUnregisterLayer = (targetManager, layerId) => {
         if (targetManager !== dataManager) throw new Error('QA layer manager mismatch');
         return dataManager.unregisterForQa(layerId);
       };
@@ -311,7 +311,7 @@ async function init() {
     // loop burning behind a hidden tab. (perf wave 2 fix)
     syncVisibilitySuspension();
 
-    window.__godsEyeView = {
+    window.__visonTR = {
       viewer,
       styleManager,
       tileset,
@@ -324,10 +324,10 @@ async function init() {
       getRenderGovernorDiagnostics,
       requestRender: governorRequestRender,
     };
-    window.__godsEyeView.voiceCommands = initGevVoiceCommands({ viewer, styleManager, dataManager, sceneDirector, annotations });
+    window.__visonTR.voiceCommands = initVtrVoiceCommands({ viewer, styleManager, dataManager, sceneDirector, annotations });
 
   } catch (error) {
-    console.error("God's Eye View initialization failed:", error);
+    console.error("VisonTR initialization failed:", error);
     loaderStatus.textContent = `Error: ${describeError(error)}`;
     loaderStatus.style.color = '#ff4444';
   }

@@ -676,7 +676,7 @@ function selectNavigationTargets(sourceCohorts, subject, visitedKeys, {
  *   Detached awareness subject, or null when no flight owns the follow camera.
  */
 function currentTrackedFlightSubject() {
-  const trackedKey = normalizeContextId(state.viewer?.trackedEntity?.gevTrackedId);
+  const trackedKey = normalizeContextId(state.viewer?.trackedEntity?.vtrTrackedId);
   if (!trackedKey) return null;
   const subjects = [
     flightsLayer.getTrackedSubject?.(),
@@ -1258,13 +1258,13 @@ function selectSubject(subject) {
 function resolveSubjectPosition(subject, { allowCollectionMaterialization = true } = {}) {
   if (!subject?.position) return null;
   if (subject.layerId === 'flights' || subject.layerId === 'military') {
-    const trackedPosition = state.viewer?.trackedEntity?.gevDisplayPosition?.();
+    const trackedPosition = state.viewer?.trackedEntity?.vtrDisplayPosition?.();
     if (trackedPosition) {
       return {
         position: Cesium.Cartesian3.clone(trackedPosition),
         // Only the follow camera's own contact proves presence this way; a
         // different tracked entity says nothing about this subject.
-        presence: String(state.viewer?.trackedEntity?.gevTrackedId || '') === subjectKey(subject)
+        presence: String(state.viewer?.trackedEntity?.vtrTrackedId || '') === subjectKey(subject)
           ? SUBJECT_PRESENCE.LIVE
           : SUBJECT_PRESENCE.UNCHECKED,
       };
@@ -1500,10 +1500,10 @@ function syncAwarenessRenderHold() {
 
 function attachRuntimeListeners() {
   if (state.runtimeListenersAttached || !state.viewer) return;
-  window.addEventListener('gev:awareness-subject-selected', state.subjectListener);
-  window.addEventListener('gev:entity-selected', state.contextListener);
-  window.addEventListener('gev:entity-selection-cleared', state.clearListener);
-  window.addEventListener('gev:awareness-subject-cleared', state.subjectClearListener);
+  window.addEventListener('vtr:awareness-subject-selected', state.subjectListener);
+  window.addEventListener('vtr:entity-selected', state.contextListener);
+  window.addEventListener('vtr:entity-selection-cleared', state.clearListener);
+  window.addEventListener('vtr:awareness-subject-cleared', state.subjectClearListener);
   state.preRenderRemover = state.viewer.scene.preRender.addEventListener(() => {
     if (!state.enabled) return;
     const now = Date.now();
@@ -1540,10 +1540,10 @@ function attachRuntimeListeners() {
 
 function detachRuntimeListeners() {
   if (state.runtimeListenersAttached) {
-    window.removeEventListener('gev:awareness-subject-selected', state.subjectListener);
-    window.removeEventListener('gev:entity-selected', state.contextListener);
-    window.removeEventListener('gev:entity-selection-cleared', state.clearListener);
-    window.removeEventListener('gev:awareness-subject-cleared', state.subjectClearListener);
+    window.removeEventListener('vtr:awareness-subject-selected', state.subjectListener);
+    window.removeEventListener('vtr:entity-selected', state.contextListener);
+    window.removeEventListener('vtr:entity-selection-cleared', state.clearListener);
+    window.removeEventListener('vtr:awareness-subject-cleared', state.subjectClearListener);
   }
   state.preRenderRemover?.();
   state.preRenderRemover = null;
