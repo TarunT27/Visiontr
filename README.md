@@ -98,6 +98,43 @@ Thirteen live layers. **Ten of them need nothing at all** — no key, no account
 
 ---
 
+## 🖐️ Flying the Camera
+
+Tuned for a MacBook trackpad — the tilt and pinch gestures below do not exist
+in stock CesiumJS, whose bindings assume a three-button mouse with a notched
+wheel.
+
+| Gesture | Does |
+|---|---|
+| **Drag** | Pan and spin the globe |
+| **Two-finger scroll ↕** | Zoom — paced so a careful scroll and a hard flick both land where you aimed |
+| **Two-finger scroll ↔** | Swing the compass |
+| **⇧ + two-finger scroll** | Tilt — up toward the horizon, back toward top-down |
+| **Pinch** | Zoom |
+| **Two-finger rotate** | Swing the compass *(Safari)* |
+| **⌥ + drag** | Tilt |
+| **⇧ + drag** | Free-look, without moving the camera |
+| **Arrow keys** | Pan across the ground |
+| **⇧ + arrows** | Turn (←→) and tilt (↑↓) |
+| **`+` / `−`** | Zoom |
+
+Zoom, tilt and heading all pivot on whatever is under the middle of the
+screen, so the thing you are looking at stays in frame. A notched mouse keeps
+Cesium's stock feel untouched — the pacing only engages for a precision
+trackpad, which the app detects per event.
+
+Verify it on your own machine against a real browser:
+
+```bash
+npm run dev -- --host localhost --port 4173   # in one terminal
+npm run qa:gestures                            # in another
+```
+
+That drives Brave through Playwright and asserts on the live camera; point it
+elsewhere with `--browser <path>`, or watch it with `--headed`.
+
+---
+
 ## 🎖️ Field Missions
 
 Once the basics click, run these:

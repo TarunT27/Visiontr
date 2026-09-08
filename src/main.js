@@ -31,6 +31,7 @@ import {
   releaseContinuousRender,
 } from './renderGovernor.js';
 import { installScopeMask } from './scopeMask.js';
+import { installGestureNavigation } from './gestureNavigation.js';
 import { initFirstRunExperience } from './firstRunExperience.js';
 
 initLogoGaze();
@@ -281,6 +282,14 @@ async function init() {
     // toggle finds it live.
     installScopeMask(viewer);
 
+    // MacBook trackpad + keyboard navigation. Cesium's stock bindings assume
+    // a three-button mouse with a notched wheel: on a laptop that leaves tilt
+    // unreachable (MIDDLE_DRAG / CTRL+drag, the latter stolen by macOS as a
+    // secondary click), pinch inert, and wheel zoom linear in a delta macOS
+    // accelerates by 200x. See src/gestureNavigation.js for the full map.
+    // Installed after the governor so its keyboard loop can take a hold.
+    const gestureNavigation = installGestureNavigation(viewer);
+
     // The follow camera recomputes the tracked target's dead-reckon position
     // every frame — tracking anything is a per-frame animation. (perf wave 2)
     viewer.trackedEntityChanged.addEventListener(() => {
@@ -321,6 +330,7 @@ async function init() {
       annotations,
       weatherEffects,
       cockpitCloudEffects,
+      gestureNavigation,
       getRenderGovernorDiagnostics,
       requestRender: governorRequestRender,
     };

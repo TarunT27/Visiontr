@@ -7,6 +7,18 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 
 ### Added
 
+- Added MacBook trackpad navigation. Pinch now zooms (Cesium aggregated the
+  gesture and never consumed it), tilt is reachable without a middle mouse
+  button via `⌥`+drag and `⇧`+two-finger scroll, horizontal two-finger scroll
+  swings the compass, Safari's two-finger rotate does the same, and wheel zoom
+  is paced against macOS scroll acceleration so a careful scroll and a hard
+  flick both land where they were aimed. A notched mouse keeps Cesium's stock
+  feel; the device is classified per event.
+- Added keyboard navigation: arrow keys pan across the ground, `⇧`+arrows turn
+  and tilt, `+`/`−` zoom. None of them claim a key the existing global hotkeys
+  already own.
+- Added `npm run qa:gestures`, a Playwright gate that drives a real browser
+  (Brave by default) and asserts the gesture map against the live camera.
 - Added honest aircraft identity narration: callsign, operator, registration,
   type, and route come only from selected-contact context, and missing operator,
   route, or type enrichment is named explicitly.

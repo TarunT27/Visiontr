@@ -40,6 +40,11 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* Kill the macOS two-finger swipe-back. Horizontal scroll on the globe is
+     a heading gesture (src/gestureNavigation.js), and without this Chromium
+     browsers can still promote an over-scrolled swipe into a history
+     navigation, which throws away the whole session. */
+  overscroll-behavior: none;
   background: var(--bg-dark);
   font-family: var(--font-sans);
   color: var(--text-primary);
